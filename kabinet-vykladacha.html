@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="uk" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Кабінет викладача — Освітній Простір №8</title>
+  <link rel="icon" href="brand/logo-mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body { padding:0; }
+    .wrap { max-width:920px; margin:0 auto; padding:24px 20px 80px; }
+    .tbl { width:100%; border-collapse:collapse; margin-top:14px; background:var(--surface);
+      border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; }
+    .tbl th { text-align:left; font-size:12px; text-transform:uppercase; letter-spacing:.05em;
+      color:var(--muted); padding:12px 14px; border-bottom:1px solid var(--line); }
+    .tbl td { padding:12px 14px; border-bottom:1px solid var(--line); vertical-align:middle; }
+    .tbl tr:last-child td { border-bottom:none; }
+    .tbl .btn { padding:7px 12px; font-size:13px; }
+    .muted{color:var(--muted)} .small{font-size:12px}
+    .lvl{font-weight:800;border-radius:6px;padding:1px 7px;color:#fff;font-size:12px}
+    .lvl1{background:#9AA7BD}.lvl2{background:var(--blue)}.lvl3{background:var(--green)}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <img class="logo" src="brand/logo.svg" alt="Освітній Простір №8">
+    <span class="spacer"></span>
+    <a class="iconbtn" href="index.html">До курсу</a>
+  </header>
+  <div class="wrap"><div id="teacher"></div></div>
+
+  <script src="content/course.js"></script>
+  <script src="js/cabinet.js"></script>
+  <script src="js/certificate.js"></script>
+  <script src="js/instructor.js"></script>
+</body>
+</html>
