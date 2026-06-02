@@ -1,0 +1,41 @@
+<svg viewBox="0 0 860 240" xmlns="http://www.w3.org/2000/svg" font-family="e-Ukraine, Inter, Segoe UI, sans-serif" role="img" aria-label="Ментальна карта: залізо → ОС → програми → мережа → хмара → ШІ">
+  <title>Ментальна карта цифрового світу</title>
+  <defs>
+    <marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#15356B"/>
+    </marker>
+  </defs>
+  <style>
+    .lab{font-size:15px;font-weight:700;fill:#15356B}
+    .sub{font-size:11px;fill:#3C4858}
+    .box{rx:12;stroke:#D9E0EC;stroke-width:1.5}
+  </style>
+  <!-- шари -->
+  <g>
+    <rect class="box" x="10"  y="80" width="120" height="78" fill="#EAF0FA"/>
+    <rect class="box" x="146" y="80" width="120" height="78" fill="#EAF0FA"/>
+    <rect class="box" x="282" y="80" width="120" height="78" fill="#E7F5EC"/>
+    <rect class="box" x="418" y="80" width="120" height="78" fill="#E7F5EC"/>
+    <rect class="box" x="554" y="80" width="120" height="78" fill="#FFF1DD"/>
+    <rect class="box" x="690" y="80" width="160" height="78" fill="#FFF1DD"/>
+  </g>
+  <g text-anchor="middle">
+    <text class="lab" x="70"  y="112">Залізо</text><text class="sub" x="70"  y="134">процесор, пам'ять,</text><text class="sub" x="70" y="148">екран</text>
+    <text class="lab" x="206" y="112">ОС</text><text class="sub" x="206" y="134">Windows / Android —</text><text class="sub" x="206" y="148">«диригент»</text>
+    <text class="lab" x="342" y="112">Програми</text><text class="sub" x="342" y="134">браузер, Word,</text><text class="sub" x="342" y="148">додатки</text>
+    <text class="lab" x="478" y="112">Мережа</text><text class="sub" x="478" y="134">інтернет,</text><text class="sub" x="478" y="148">звʼязок</text>
+    <text class="lab" x="614" y="112">Хмара</text><text class="sub" x="614" y="134">сервіси, Дія,</text><text class="sub" x="614" y="148">сховище</text>
+    <text class="lab" x="770" y="112">Штучний інтелект</text><text class="sub" x="770" y="134">помічник, що працює</text><text class="sub" x="770" y="148">поверх усього</text>
+  </g>
+  <!-- стрілки -->
+  <g stroke="#15356B" stroke-width="2" marker-end="url(#ar)">
+    <line x1="130" y1="119" x2="144" y2="119"/>
+    <line x1="266" y1="119" x2="280" y2="119"/>
+    <line x1="402" y1="119" x2="416" y2="119"/>
+    <line x1="538" y1="119" x2="552" y2="119"/>
+    <line x1="674" y1="119" x2="688" y2="119"/>
+  </g>
+  <text x="430" y="40" text-anchor="middle" font-size="20" font-weight="800" fill="#15356B">Як влаштований цифровий світ</text>
+  <text x="430" y="62" text-anchor="middle" font-size="13" fill="#3C4858">кожен шар спирається на попередній</text>
+  <text x="430" y="200" text-anchor="middle" font-size="13" fill="#2E9E5B" font-weight="700">Зрозумієш ці 6 шарів — зрозумієш будь-який пристрій</text>
+</svg>

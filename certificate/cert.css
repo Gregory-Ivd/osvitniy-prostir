@@ -1,0 +1,39 @@
+/* Сертифікат + карта профілю — друк-орієнтований вигляд */
+body { background:var(--bg); padding:24px; }
+.cert-wrap { max-width:900px; margin:0 auto; }
+.cert-page {
+  background:#fff; color:var(--ink); border:1px solid var(--line); border-radius:16px;
+  padding:40px 48px; margin:0 auto 24px; box-shadow:var(--shadow); position:relative;
+}
+.cert-face { border-top:8px solid var(--orange); text-align:center; }
+.cert-top { display:flex; align-items:center; justify-content:space-between; gap:16px; }
+.cert-logo { height:48px; }
+.cert-issuers { font-size:.66rem; color:var(--muted); text-align:right; max-width:280px; }
+.cert-body { padding:26px 0; }
+.cert-kicker { letter-spacing:.22em; color:var(--orange); font-weight:800; font-size:1rem; }
+.cert-sub { color:var(--muted); margin-top:6px; }
+.cert-name { font-size:1.85rem; font-weight:800; color:var(--blue); margin:22px 0 4px; }
+.cert-group { color:var(--muted); }
+.cert-level { margin-top:18px; font-size:1.05rem; color:var(--ink); }
+.cert-level b { color:var(--green); }
+.cert-note { color:var(--muted); margin-top:4px; }
+.cert-stats { margin-top:18px; }
+.cert-sign { display:flex; justify-content:space-between; align-items:flex-end; gap:20px; margin-top:30px; font-size:.76rem; color:var(--muted); }
+.sig-line { display:block; width:160px; border-top:1.5px solid var(--line); margin-bottom:6px; }
+.cert-id { font-size:.58rem; color:#aab; }
+
+.cert-card h2 { color:var(--blue); margin:0 0 4px; }
+.cert-card h3 { color:var(--blue); margin:22px 0 8px; font-size:.95rem; }
+.muted { color:var(--muted); } .small { font-size:.76rem; }
+.pf-row { display:grid; grid-template-columns:240px 1fr 70px; align-items:center; gap:12px; margin:8px 0; font-size:.82rem; }
+.pf-bar { background:var(--line); height:12px; border-radius:99px; overflow:hidden; }
+.pf-bar > i { display:block; height:100%; border-radius:99px; }
+.pf-row b { text-align:right; }
+.fillable { border-bottom:1px dashed var(--line); padding:8px 0; color:var(--ink); }
+.cert-actions { text-align:center; margin:20px 0 40px; }
+
+@media print {
+  body { padding:0; background:#fff; }
+  .no-print { display:none !important; }
+  .cert-page { box-shadow:none; border:none; border-radius:0; margin:0; page-break-after:always; }
+}

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="uk" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Сертифікат — Освітній Простір №8</title>
+  <link rel="icon" href="../brand/logo-mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="cert.css">
+</head>
+<body>
+  <div class="cert-wrap">
+    <p class="no-print"><a href="../kabinet-vykladacha.html">← Кабінет викладача</a> · <a href="../index.html">До курсу</a></p>
+    <div id="cert"></div>
+  </div>
+  <script src="../content/course.js"></script>
+  <script src="../js/cabinet.js"></script>
+  <script src="../js/certificate.js"></script>
+  <script>
+    (function(){
+      var id = new URLSearchParams(location.search).get("id") || Cabinet.activeId();
+      if(!id){ document.getElementById("cert").innerHTML =
+        "<p style='text-align:center;padding:40px'>Не вказано учня. Відкрий сертифікат із кабінету викладача або увійди у свій кабінет.</p>"; return; }
+      Certificate.render(document.getElementById("cert"), id);
+    })();
+  </script>
+</body>
+</html>
