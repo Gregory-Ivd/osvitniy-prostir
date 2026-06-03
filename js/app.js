@@ -120,7 +120,8 @@
     // викладач
     const teach = elc("p", null,
       '<a href="kabinet-vykladacha.html">Кабінет викладача →</a>' +
-      ' &nbsp;·&nbsp; <a href="zayava.html">Заява на доступ до онлайн-ресурсу →</a>');
+      ' &nbsp;·&nbsp; <a href="zayava.html">Заява на доступ до онлайн-ресурсу →</a>' +
+      ' &nbsp;·&nbsp; <a href="prezentatsiya.html" target="_blank" rel="noopener">Презентація проєкту →</a>');
     teach.style.marginTop="18px";
     box.appendChild(teach);
     c.appendChild(box);
