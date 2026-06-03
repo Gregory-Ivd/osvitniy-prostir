@@ -68,10 +68,20 @@
       const p = reg.profiles[id];
       let prog = {}; try { prog = JSON.parse(localStorage.getItem(progKey(id)) || "{}"); } catch(e){}
       const data = { kind:"op8-profile", version:1, profile:{ name:p.name, group:p.group, createdAt:p.createdAt }, progress: prog, exportedAt: now() };
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type:"application/json" });
+      const json = JSON.stringify(data, null, 2);
+      const filename = "OP8_" + (p.name||"учень").replace(/\s+/g,"_") + ".json";
+      // Десктоп (Electron) — нативне збереження на флешку; браузер — завантаження файлу.
+      if (window.electronAPI && window.electronAPI.saveResults) {
+        window.electronAPI.saveResults(filename, json).then(res => {
+          if (res && res.ok) alert("Збережено: " + res.path + (res.usb ? "\n(на флешку)" : ""));
+          else if (!(res && res.canceled)) alert("Не вдалося зберегти" + (res && res.error ? ": " + res.error : "."));
+        });
+        return;
+      }
+      const blob = new Blob([json], { type:"application/json" });
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
-      a.download = "OP8_" + (p.name||"учень").replace(/\s+/g,"_") + ".json";
+      a.download = filename;
       document.body.appendChild(a); a.click(); a.remove();
     },
 

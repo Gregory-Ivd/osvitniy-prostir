@@ -1,0 +1,45 @@
+{
+  "name": "osvitniy-prostir-8",
+  "version": "1.0.0",
+  "description": "Освітній Простір №8 — курс цифрової грамотності (десктоп-версія)",
+  "author": "Освітній Простір №8",
+  "license": "MIT",
+  "main": "electron/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win portable"
+  },
+  "build": {
+    "appId": "ua.osvitniyprostir8.course",
+    "productName": "Освітній Простір 8",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "electron/**",
+      "index.html",
+      "kabinet-vykladacha.html",
+      "zayava.html",
+      "prezentatsiya.html",
+      "css/**",
+      "js/**",
+      "content/**",
+      "assets/**",
+      "brand/**",
+      "certificate/**",
+      "handouts/**",
+      "instructor/**"
+    ],
+    "win": {
+      "target": "portable",
+      "signAndEditExecutable": false
+    },
+    "portable": {
+      "artifactName": "OsvitniyProstir8-${version}.exe"
+    }
+  },
+  "devDependencies": {
+    "electron": "^42.3.3",
+    "electron-builder": "^26.8.1"
+  }
+}
