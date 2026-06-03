@@ -1,0 +1,15 @@
+<svg viewBox="2 0 114 96" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Освітній Простір №8 — знак">
+  <title>Освітній Простір №8 — знак із променями</title>
+  <!-- frame (екран / кімната) -->
+  <rect x="10" y="14" width="50" height="68" rx="10" fill="#FFFFFF" stroke="#15356B" stroke-width="5"/>
+  <!-- внутрішня стежка-паросток -->
+  <path d="M24 70 C24 54 30 44 44 38" fill="none" stroke="#2E9E5B" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="44" cy="36" r="5" fill="#2E9E5B"/>
+  <!-- двері, що відчиняються назовні -->
+  <path d="M60 14 L86 6 L86 90 L60 82 Z" fill="#F39200"/>
+  <!-- промені світла -->
+  <path d="M90 30 L106 26 M90 48 L108 48 M90 66 L106 70" stroke="#F39200" stroke-width="4" stroke-linecap="round"/>
+  <!-- знак-печать №8 -->
+  <circle cx="64" cy="78" r="12" fill="#15356B" stroke="#FFFFFF" stroke-width="2"/>
+  <text x="64" y="83" text-anchor="middle" font-family="Inter, Segoe UI, sans-serif" font-size="13" font-weight="800" fill="#FFFFFF">8</text>
+</svg>
