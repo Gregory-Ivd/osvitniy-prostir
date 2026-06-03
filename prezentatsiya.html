@@ -35,17 +35,17 @@
   .slide>.inner{width:100%; max-width:var(--maxw); margin-inline:auto;}
 
   .eyebrow{color:var(--amber); font-weight:700; letter-spacing:.16em; text-transform:uppercase;
-    font-size:clamp(.72rem,1.3vw,.9rem); margin-bottom:var(--s5);}
+    font-size:clamp(.8rem,1.5vw,1.1rem); margin-bottom:var(--s5);}
   h1{color:var(--blue); font-weight:800; letter-spacing:-.02em; line-height:1.04;
-    font-size:clamp(1.9rem,5vw,3.5rem); margin-bottom:var(--s4);}
+    font-size:clamp(2rem,5.6vw,4.2rem); margin-bottom:var(--s4);}
   h2{color:var(--blue); font-weight:800; letter-spacing:-.015em; line-height:1.12;
-    font-size:clamp(1.45rem,3.4vw,2.4rem); margin-bottom:var(--s6); position:relative;}
+    font-size:clamp(1.6rem,4vw,3rem); margin-bottom:var(--s6); position:relative;}
   h2::after{content:""; display:block; width:44px; height:3px; background:var(--orange);
     border-radius:2px; margin:var(--s4) auto 0;}
   .lead{color:var(--ink); font-weight:500; line-height:1.32; letter-spacing:-.01em;
-    font-size:clamp(1.4rem,3.3vw,2.6rem); max-width:20ch; margin-inline:auto;}
-  p{font-size:clamp(1.05rem,2vw,1.45rem); line-height:1.5; color:var(--ink); max-width:36ch; margin-inline:auto;}
-  .sub{color:var(--muted); font-size:clamp(.95rem,1.6vw,1.2rem); line-height:1.55;
+    font-size:clamp(1.6rem,3.9vw,3.2rem); max-width:20ch; margin-inline:auto;}
+  p{font-size:clamp(1.2rem,2.4vw,1.8rem); line-height:1.5; color:var(--ink); max-width:36ch; margin-inline:auto;}
+  .sub{color:var(--muted); font-size:clamp(1.05rem,1.9vw,1.45rem); line-height:1.55;
     margin:var(--s5) auto 0; max-width:48ch;}
   strong{font-weight:700; color:var(--blue);}
 
@@ -75,31 +75,31 @@
   .card{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:var(--s5);
     box-shadow:0 1px 2px rgba(21,53,107,.04), 0 10px 26px rgba(21,53,107,.06); text-align:left;}
   .card .ic{width:30px; height:30px; color:var(--orange); margin-bottom:10px; display:block;}
-  .card b{display:block; color:var(--blue); font-weight:800; font-size:clamp(1.05rem,1.9vw,1.3rem); margin-bottom:6px;}
-  .card span{color:var(--muted); font-size:clamp(.9rem,1.4vw,1.02rem); line-height:1.5;}
+  .card b{display:block; color:var(--blue); font-weight:800; font-size:clamp(1.15rem,2.1vw,1.5rem); margin-bottom:6px;}
+  .card span{color:var(--muted); font-size:clamp(1rem,1.6vw,1.18rem); line-height:1.5;}
 
   /* таймлайн */
   .timeline{display:flex; flex-direction:column; gap:var(--s4); margin-top:var(--s2);
     text-align:left; max-width:900px; margin-inline:auto;}
   .tl{display:grid; grid-template-columns:6ch 1fr; gap:var(--s5); align-items:baseline;}
-  .tl .yr{color:var(--amber); font-weight:800; font-size:clamp(1.05rem,2vw,1.4rem); font-variant-numeric:tabular-nums;}
-  .tl .ev{font-size:clamp(1rem,1.9vw,1.35rem); line-height:1.4; color:var(--ink);}
+  .tl .yr{color:var(--amber); font-weight:800; font-size:clamp(1.15rem,2.2vw,1.6rem); font-variant-numeric:tabular-nums;}
+  .tl .ev{font-size:clamp(1.1rem,2.1vw,1.55rem); line-height:1.4; color:var(--ink);}
   .tl.win{position:relative;}
   .tl.win .ev{color:var(--green); font-weight:600;}
 
   /* дві колонки списків */
   .cols{display:grid; grid-template-columns:1fr 1fr; gap:var(--s7); text-align:left; max-width:920px; margin-inline:auto;}
   .cols h3{color:var(--amber); font-weight:700; letter-spacing:.04em; text-transform:uppercase;
-    font-size:clamp(.85rem,1.5vw,1rem); margin-bottom:var(--s4);}
+    font-size:clamp(.92rem,1.6vw,1.12rem); margin-bottom:var(--s4);}
   ul{list-style:none;}
-  .cols li{font-size:clamp(.98rem,1.8vw,1.25rem); line-height:1.5; margin:var(--s3) 0;
+  .cols li{font-size:clamp(1.08rem,2vw,1.45rem); line-height:1.5; margin:var(--s3) 0;
     padding-left:26px; position:relative;}
   .cols li::before{content:""; position:absolute; left:0; top:.6em; width:8px; height:8px;
     border-radius:50%; background:var(--orange);}
 
   /* чек-лист */
   .check{display:inline-block; text-align:left; margin-inline:auto;}
-  .check li{font-size:clamp(1.02rem,1.9vw,1.4rem); line-height:1.5; margin:var(--s5) 0;
+  .check li{font-size:clamp(1.12rem,2.1vw,1.6rem); line-height:1.5; margin:var(--s5) 0;
     padding-left:42px; position:relative; max-width:40ch;}
   .check li::before{content:"✓"; position:absolute; left:0; top:.06em; color:#fff; background:var(--green);
     width:27px; height:27px; border-radius:50%; display:grid; place-items:center; font-size:.85rem; font-weight:800;}
@@ -112,7 +112,7 @@
   .shots img{width:100%; height:auto; display:block; border:1px solid var(--line); border-radius:12px;
     box-shadow:0 1px 2px rgba(21,53,107,.05), 0 12px 30px rgba(21,53,107,.12); background:#fff;}
   .shots figcaption{margin-top:var(--s3); color:var(--muted); font-size:clamp(.82rem,1.4vw,1rem);}
-  .blk{font-size:clamp(1rem,1.9vw,1.35rem); line-height:1.4; padding-left:18px; border-left:3px solid var(--line);}
+  .blk{font-size:clamp(1.1rem,2.1vw,1.55rem); line-height:1.4; padding-left:18px; border-left:3px solid var(--line);}
   .blk b{color:var(--blue);} .blk span{color:var(--muted);}
 
   /* акценти у тексті — лише вага/синій, без кольорового тексту низького контрасту */
@@ -153,6 +153,11 @@
     .shots{grid-template-columns:1fr; gap:var(--s4);}
     .counter,.hint{font-size:.74rem;}
     .dots{bottom:54px;}
+  }
+  /* невисокі екрани (напр. 1366×768): зменшуємо вертикальні поля, щоб контент не обрізався */
+  @media (max-height:820px){
+    .slide{padding-top:4vh; padding-bottom:6vh;}
+    .check li{margin:var(--s4) 0;}
   }
   @media print{ .ctrl,.dots,.counter,.fs,.hint,.pbar{display:none!important;}
     .slide{display:flex!important; position:relative; height:100vh; page-break-after:always;}
