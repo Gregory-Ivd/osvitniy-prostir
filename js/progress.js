@@ -14,6 +14,7 @@
     learner: { name: "", group: "" },
     modules: {},          // id -> {visited, completed, reflection}
     quiz: {},             // id -> {best, total, attempts, lastScore}
+    typing: {},           // lessonId -> {bestCpm, bestAcc, attempts, lastCpm, lastAcc}
     signals: {            // сигнали самостійності (телеметрія)
       hintsUsed: 0,       // скільки разів відкрито підказку
       optionalDone: 0,    // виконані опційні/просунуті задачі
@@ -60,6 +61,17 @@
       save();
     },
     getQuiz(id) { return state.quiz[id] || null; },
+
+    /* Тренажер сліпого набору: зберігаємо найкращий результат на кожен урок. */
+    setTyping(lessonId, rec) {
+      const t = (state.typing[lessonId] = state.typing[lessonId] || { bestCpm:0, bestAcc:0, attempts:0, lastCpm:0, lastAcc:0 });
+      t.attempts += 1; t.lastCpm = rec.cpm||0; t.lastAcc = rec.acc||0;
+      if ((rec.cpm||0) > t.bestCpm) t.bestCpm = rec.cpm||0;
+      if ((rec.acc||0) > t.bestAcc) t.bestAcc = rec.acc||0;
+      save();
+      return t;
+    },
+    getTyping(lessonId) { return state.typing[lessonId] || null; },
 
     addHint() { state.signals.hintsUsed += 1; save(); },
     addOptional() { state.signals.optionalDone += 1; save(); },

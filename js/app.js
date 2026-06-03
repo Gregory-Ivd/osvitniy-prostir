@@ -154,6 +154,15 @@
       if(m.level==="it") a.appendChild(elc("span","badge-it","IT"));
       nav.appendChild(a);
     });
+    // Окремий розділ (не модуль): тренажер сліпого набору
+    if(window.Trainer){
+      nav.appendChild(elc("div","nav-block","Практика"));
+      const tr = elc("a","nav-item"); tr.href = "#/trainer";
+      if(currentId==="trainer") tr.classList.add("active");
+      tr.appendChild(elc("span","nav-num","⌨"));
+      tr.appendChild(elc("span", null, "Тренажер набору"));
+      nav.appendChild(tr);
+    }
     // Окремий розділ (не модуль): корисні посилання
     if(window.LINKS){
       nav.appendChild(elc("div","nav-block","Ресурси"));
@@ -321,6 +330,13 @@
       html: L.callToAction + ' <a href="zayava.html">Заповнити заяву →</a>' }));
   }
 
+  /* ---------- ТРЕНАЖЕР НАБОРУ ---------- */
+  function renderTrainer(){
+    const c = $("#content"); c.innerHTML=""; window.scrollTo(0,0);
+    if(window.Trainer) Trainer.render(c);
+    else c.appendChild(elc("p", null, "Тренажер недоступний."));
+  }
+
   /* ---------- ЛЕНДИНГ ---------- */
   function renderHome(){
     const c = $("#content"); c.innerHTML=""; window.scrollTo(0,0);
@@ -357,6 +373,7 @@
     const hash = location.hash.replace(/^#\/?/, "");
     if(!hash){ currentId=null; renderHome(); buildNav(); return; }
     if(hash==="links"){ currentId="links"; renderLinks(); buildNav(); $("#sidebar").classList.remove("open"); return; }
+    if(hash==="trainer"){ currentId="trainer"; renderTrainer(); buildNav(); $("#sidebar").classList.remove("open"); return; }
     const m = M.find(x=>x.id===hash);
     currentId = m ? m.id : null;
     if(m){ renderModule(m); } else { renderHome(); }

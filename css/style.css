@@ -230,6 +230,59 @@ a.link-card .card-more { color:var(--blue); word-break:break-all; }
   .content { padding:20px 18px 80px; }
 }
 
+/* ---- Тренажер сліпого набору ---- */
+.trainer { max-width:760px; outline:none; }
+.trainer:focus-visible { outline:none; }
+.tr-lessons { display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 6px; }
+.tr-lesson { border:1px solid var(--line); background:var(--surface); color:var(--ink); cursor:pointer;
+  border-radius:99px; padding:7px 14px; font-family:var(--font); font-size:.82rem; font-weight:700; }
+.tr-lesson.active { background:var(--blue); color:#fff; border-color:var(--blue); }
+.tr-hint { color:var(--muted); font-size:.85rem; margin:6px 0 14px; }
+
+.tr-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin:6px 0 16px; }
+.tr-stat { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-sm);
+  padding:10px 8px; text-align:center; box-shadow:var(--shadow); }
+.tr-stat b { display:block; font-size:1.5rem; color:var(--blue); line-height:1.1; }
+.tr-stat span { font-size:.66rem; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
+
+.tr-target { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+  padding:18px 20px; font-size:1.5rem; line-height:1.8; letter-spacing:.04em; box-shadow:var(--shadow);
+  word-break:break-word; }
+.tr-char { color:var(--muted); border-radius:4px; padding:0 1px; }
+.tr-char.sp { color:var(--line); }
+.tr-char.done { color:var(--green); }
+.tr-char.cur { background:var(--orange); color:#fff; box-shadow:0 0 0 3px var(--orange-soft); }
+.tr-char.err { background:#d9534f; color:#fff; }
+
+.tr-next { text-align:center; color:var(--muted); font-size:.9rem; margin:12px 0; min-height:1.2em; }
+.tr-next b { color:var(--orange); }
+
+.tr-kbd { display:flex; flex-direction:column; gap:6px; align-items:center; margin:6px 0 4px; }
+.tr-row { display:flex; gap:6px; justify-content:center; flex-wrap:nowrap; }
+.tr-key { min-width:2.1em; height:2.4em; display:grid; place-items:center; border-radius:8px;
+  border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:.92rem; font-weight:700;
+  box-shadow:var(--shadow); transition:transform .08s, box-shadow .08s; }
+.tr-key.tr-space { min-width:13em; font-size:.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:.1em; }
+.tr-key.next { transform:translateY(-3px) scale(1.08); border-color:var(--orange); color:#fff;
+  background:var(--orange); box-shadow:0 0 0 3px var(--orange-soft), var(--shadow); }
+/* зони пальців — м'який колірний фон */
+.f-lp { background:rgba(229,115,115,.22); } .f-lr { background:rgba(255,183,77,.22); }
+.f-lm { background:rgba(255,213,79,.26); }  .f-li { background:rgba(174,213,129,.26); }
+.f-ri { background:rgba(79,195,161,.24); }  .f-rm { background:rgba(100,181,246,.22); }
+.f-rr { background:rgba(149,117,205,.22); } .f-rp { background:rgba(240,98,146,.20); }
+.f-th { background:var(--surface); }
+
+.tr-controls { display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin:14px 0 8px; }
+.tr-result { color:var(--green); font-size:.92rem; }
+.tr-result b { color:var(--blue); }
+.tr-note { color:var(--muted); font-size:.78rem; margin-top:8px; }
+
+@media (max-width:620px) {
+  .tr-stats { grid-template-columns:repeat(2,1fr); }
+  .tr-key { min-width:1.7em; height:2.1em; font-size:.8rem; }
+  .tr-target { font-size:1.2rem; }
+}
+
 /* ---- Друк (для роздаток) ---- */
 @media print {
   .topbar,.sidebar,.module-foot,.menu-toggle { display:none !important; }
