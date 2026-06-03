@@ -27,6 +27,10 @@
 
   let reg = loadReg();
 
+  // Захист від ін'єкції через підмінений файл/введення: прибираємо кутові дужки й
+  // обмежуємо довжину. Імʼя/група виводяться як innerHTML — тож знешкоджуємо на вході.
+  const clean = s => String(s == null ? "" : s).replace(/[<>]/g, "").trim().slice(0, 80);
+
   const Cabinet = {
     list() {
       return Object.values(reg.profiles).map(p => ({ id:p.id, name:p.name, group:p.group }));
@@ -35,7 +39,7 @@
     active() { return reg.active ? reg.profiles[reg.active] : null; },
 
     create(name, group, pin) {
-      name = (name||"").trim(); group = (group||"").trim();
+      name = clean(name); group = clean(group);
       if (!name) throw new Error("Вкажіть імʼя");
       const id = uid(name);
       reg.profiles[id] = { id, name, group, pin: hash(String(pin||"")), createdAt: now() };
@@ -74,9 +78,9 @@
     /* Імпорт профілю з файлу (повертає id). */
     importProfile(obj, pin) {
       if (!obj || obj.kind !== "op8-profile") throw new Error("Невірний файл профілю");
-      const name = obj.profile?.name || "Учень";
+      const name = clean(obj.profile?.name) || "Учень";
       const id = uid(name);
-      reg.profiles[id] = { id, name, group: obj.profile?.group || "", pin: hash(String(pin||"")), createdAt: obj.profile?.createdAt || now() };
+      reg.profiles[id] = { id, name, group: clean(obj.profile?.group), pin: hash(String(pin||"")), createdAt: obj.profile?.createdAt || now() };
       try { localStorage.setItem(progKey(id), JSON.stringify(obj.progress || {})); } catch(e){}
       saveReg(reg);
       return id;
