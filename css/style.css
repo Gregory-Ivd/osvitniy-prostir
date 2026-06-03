@@ -277,6 +277,14 @@ a.link-card .card-more { color:var(--blue); word-break:break-all; }
 .tr-result b { color:var(--blue); }
 .tr-note { color:var(--muted); font-size:.78rem; margin-top:8px; }
 
+.tr-rec { color:var(--blue); font-size:.82rem; font-weight:700; margin:2px 0 12px; }
+.tr-ref { margin-top:14px; border:1px solid var(--line); border-radius:var(--radius-sm);
+  background:var(--surface); padding:2px 14px; }
+.tr-ref summary { cursor:pointer; font-weight:700; font-size:.88rem; padding:10px 0; color:var(--ink); }
+.tr-ref-table { width:100%; border-collapse:collapse; margin:4px 0 12px; font-size:.86rem; }
+.tr-ref-table td { padding:6px 8px; border-top:1px solid var(--line); color:var(--ink); }
+.tr-ref-k { font-weight:800; color:var(--blue); white-space:nowrap; width:44%; }
+
 .tr-back { display:inline-block; margin-bottom:8px; color:var(--muted); text-decoration:none;
   font-size:.85rem; font-weight:700; }
 .tr-back:hover { color:var(--blue); }
