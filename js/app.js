@@ -19,7 +19,7 @@
 
   /* ---------- РОЗМІР ТЕКСТУ (А− / А+) ---------- */
   const FS_KEY = "op8.fs";
-  const FS_STEPS = ["s","m","l"];           // малий / звичайний / великий = 17 / 19 / 22px
+  const FS_STEPS = ["s","m","l","xl"];      // компактний / звичайний / великий / екран = 19 / 22 / 26 / 30px
   function applyFs(s){
     if(!FS_STEPS.includes(s)) s = "m";
     document.documentElement.setAttribute("data-fs", s);

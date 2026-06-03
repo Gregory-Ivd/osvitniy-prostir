@@ -3,8 +3,8 @@
   <defs>
     <marker id="ap" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#2E9E5B"/></marker>
   </defs>
-  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="800" fill="#15356B">«Освітній простір»: від 5 книг — до працевлаштування</text>
-  <style>.yr{font-size:13px;font-weight:800;fill:#F39200}.cap{font-size:12px;fill:#3C4858}.st{font-size:14px;font-weight:700;fill:#15356B}</style>
+  <text x="500" y="30" text-anchor="middle" font-size="23" font-weight="800" fill="#15356B">«Освітній простір»: від 5 книг — до працевлаштування</text>
+  <style>.yr{font-size:16px;font-weight:800;fill:#F39200}.cap{font-size:15px;fill:#3C4858}.st{font-size:17px;font-weight:700;fill:#15356B}</style>
 
   <!-- 6 етапів-карток -->
   <g>
@@ -30,6 +30,6 @@
     <line x1="658" y1="116" x2="682" y2="116"/>
     <line x1="824" y1="116" x2="848" y2="116"/>
   </g>
-  <text x="500" y="210" text-anchor="middle" font-size="14" fill="#2E9E5B" font-weight="700">Цей курс — наступний крок цього шляху. І твій теж.</text>
-  <text x="500" y="234" text-anchor="middle" font-size="12" fill="#3C4858">Базова установа: ДУ «Житомирська установа виконання покарань №8»</text>
+  <text x="500" y="212" text-anchor="middle" font-size="16" fill="#2E9E5B" font-weight="700">Цей курс — наступний крок цього шляху. І твій теж.</text>
+  <text x="500" y="236" text-anchor="middle" font-size="14" fill="#3C4858">Базова установа: ДУ «Житомирська установа виконання покарань №8»</text>
 </svg>
