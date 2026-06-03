@@ -1,0 +1,16 @@
+# Внутрішні робочі файли — НЕ для репозиторію
+.claude/
+.playwright-mcp/
+PLAN.md
+PROGRESS.md
+
+# Тимчасові / службові
+.nocache_server.py
+*.tmp
+*.log
+Thumbs.db
+desktop.ini
+
+# Залежності/збірка (на майбутнє — Electron/Capacitor)
+node_modules/
+dist/
