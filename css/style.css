@@ -273,9 +273,25 @@ a.link-card .card-more { color:var(--blue); word-break:break-all; }
 .f-th { background:var(--surface); }
 
 .tr-controls { display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin:14px 0 8px; }
-.tr-result { color:var(--green); font-size:.92rem; }
+.tr-result { color:var(--ink); font-size:.95rem; }
 .tr-result b { color:var(--blue); }
 .tr-note { color:var(--muted); font-size:.78rem; margin-top:8px; }
+
+.tr-back { display:inline-block; margin-bottom:8px; color:var(--muted); text-decoration:none;
+  font-size:.85rem; font-weight:700; }
+.tr-back:hover { color:var(--blue); }
+
+/* оцінка результату */
+.tr-grade { padding:2px 10px; border-radius:99px; font-weight:800; }
+.tr-grade.bad   { color:#fff; background:#d9534f; }
+.tr-grade.ok    { color:#fff; background:var(--orange); }
+.tr-grade.good  { color:#fff; background:var(--green); }
+.tr-grade.great { color:#fff; background:var(--blue); }
+
+/* повноекранний режим тренажера — дерево модулів згорнуте */
+.layout.focus { grid-template-columns:1fr; }
+.layout.focus .sidebar { display:none; }
+.layout.focus .trainer { max-width:1040px; margin:0 auto; }
 
 @media (max-width:620px) {
   .tr-stats { grid-template-columns:repeat(2,1fr); }

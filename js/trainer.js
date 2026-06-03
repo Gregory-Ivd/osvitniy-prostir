@@ -38,6 +38,14 @@
   const WORDS = ["дім","рука","сила","право","робота","освіта","навик","текст","лист","план",
                  "мета","крок","успіх","знання","вільний","життя","вибір","шлях","праця","добро"];
 
+  /* --- оцінка результату за швидкістю і точністю --- */
+  function grade(cpm, acc){
+    if(acc < 80)              return { label:"Погано — більше точності", cls:"bad",   icon:"🔴" };
+    if(cpm < 90 || acc < 90)  return { label:"Нормально",                cls:"ok",    icon:"🟡" };
+    if(cpm < 170 || acc < 97) return { label:"Добре",                    cls:"good",  icon:"🟢" };
+    return                           { label:"Відмінно",                 cls:"great", icon:"⭐" };
+  }
+
   function pick(set){ return set[Math.floor(Math.random()*set.length)]; }
   function groups(set, n, min, max){
     const out = [];
@@ -53,6 +61,8 @@
     for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
     return a.slice(0, n).join(" ");
   }
+  const cap = w => w.charAt(0).toUpperCase() + w.slice(1);
+  function shuffleWordsCap(n){ return shuffleWords(n).split(" ").map(cap).join(" "); }
 
   const LESSONS = [
     { id:"home", name:"Домашній ряд", hint:"Тримай пальці на ряду ФІВА — ОЛДЖ. Вказівні — на «а» та «о».",
@@ -65,13 +75,18 @@
       gen:()=>groups(DIG, 8, 2, 4) },
     { id:"words", name:"Слова",        hint:"Справжні слова. Намагайся не дивитися на клавіатуру.",
       gen:()=>shuffleWords(10) },
-    { id:"text",  name:"Текст",        hint:"Цілісний текст із пробілами й крапкою.",
-      gen:()=>"дорогу долає той хто йде. перший крок за тобою." }
+    { id:"caps",  name:"Великі літери", hint:"Велика літера — це Shift + клавіша. Великий палець тримає Shift, поки інший палець тисне літеру.",
+      gen:()=>shuffleWordsCap(8) },
+    { id:"text",  name:"Текст",        hint:"Цілісний текст: великі літери на початку речень і крапка.",
+      gen:()=>"Дорогу долає той хто йде. Перший крок за тобою." }
   ];
 
   function render(container){
     const root = elc("div","trainer");
     root.tabIndex = 0; // фокус для перехоплення клавіш
+
+    const back = elc("a","tr-back","← До курсу"); back.href = "#/";
+    root.appendChild(back);
 
     const head = elc("div","module-head");
     head.appendChild(elc("div","eyebrow","Практика"));
@@ -172,16 +187,19 @@
     function highlightNext(){
       Object.values(keyEls).forEach(k=> k.classList.remove("next"));
       if(state.done){ nextHint.textContent = ""; return; }
-      const ch = (state.target[state.pos]||"").toLowerCase();
-      const k = keyEls[ch];
+      const raw = state.target[state.pos] || "";
+      const low = raw.toLowerCase();
+      const isCap = raw !== low && raw !== " ";
+      const k = keyEls[low];
       if(k){ k.classList.add("next"); }
-      const f = FINGER[ch];
-      nextHint.innerHTML = f ? `Наступна: <b>${ch===" "?"пробіл":ch}</b> — ${FINGER_NAME[f]}` : "";
+      const f = FINGER[low];
+      const shown = low===" " ? "пробіл" : raw;
+      nextHint.innerHTML = f ? `Наступна: <b>${shown}</b> — ${FINGER_NAME[f]}${isCap?' <b>+ Shift</b>':''}` : "";
     }
 
     function updateStats(){
       const mins = state.startedAt ? (Date.now() - state.startedAt)/60000 : 0;
-      const cpm = mins>0 ? Math.round(state.correct/mins) : 0;
+      const cpm = mins>0 ? Math.min(999, Math.round(state.correct/mins)) : 0;
       const total = state.correct + state.errors;
       const acc = total>0 ? Math.round(100*state.correct/total) : 100;
       const prog = state.target.length ? Math.round(100*state.pos/state.target.length) : 0;
@@ -194,7 +212,7 @@
     function finish(){
       state.done = true; clearTimer();
       const mins = state.startedAt ? (Date.now() - state.startedAt)/60000 : 0;
-      const cpm = mins>0 ? Math.round(state.correct/mins) : 0;
+      const cpm = mins>0 ? Math.min(999, Math.round(state.correct/mins)) : 0;
       const total = state.correct + state.errors;
       const acc = total>0 ? Math.round(100*state.correct/total) : 100;
       updateStats(); highlightNext();
@@ -202,16 +220,17 @@
       let saved = "";
       if(window.Progress && Progress.setTyping){
         const rec = Progress.setTyping(L.id, { cpm, acc });
-        if(rec && rec.bestCpm) saved = ` · твій рекорд: <b>${rec.bestCpm}</b> зн/хв`;
+        if(rec && rec.bestCpm) saved = ` · рекорд: <b>${rec.bestCpm}</b> зн/хв`;
       }
-      result.innerHTML = `✓ Готово! Швидкість <b>${cpm}</b> зн/хв, точність <b>${acc}%</b>${saved}. Натисни «Інший рядок».`;
+      const g = grade(cpm, acc);
+      result.innerHTML = `Оцінка: <b class="tr-grade ${g.cls}">${g.icon} ${g.label}</b> · <b>${cpm}</b> зн/хв · точність <b>${acc}%</b>${saved}.`;
     }
 
     function onKey(e){
       if(state.done) return;
       let got;
       if(e.key === " " || e.code === "Space"){ got = " "; }
-      else if(e.key && e.key.length === 1){ got = e.key.toLowerCase(); }
+      else if(e.key && e.key.length === 1){ got = e.key; } // регістр важливий: велика літера = Shift
       else { return; } // Shift, Backspace, стрілки тощо — ігноруємо
       e.preventDefault();
 
@@ -223,7 +242,7 @@
         }, 500);
       }
 
-      const expected = (state.target[state.pos]||"").toLowerCase();
+      const expected = (state.target[state.pos]||"");
       const curSpan = targetBox.children[state.pos];
       if(got === expected){
         if(curSpan){ curSpan.classList.remove("cur","err"); curSpan.classList.add("done"); }

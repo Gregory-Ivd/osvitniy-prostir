@@ -371,6 +371,8 @@
   let currentId = null;
   function render(){
     const hash = location.hash.replace(/^#\/?/, "");
+    // Повноекранний режим тренажера: згортаємо дерево модулів зліва.
+    const layout = $(".layout"); if(layout) layout.classList.toggle("focus", hash==="trainer");
     if(!hash){ currentId=null; renderHome(); buildNav(); return; }
     if(hash==="links"){ currentId="links"; renderLinks(); buildNav(); $("#sidebar").classList.remove("open"); return; }
     if(hash==="trainer"){ currentId="trainer"; renderTrainer(); buildNav(); $("#sidebar").classList.remove("open"); return; }
