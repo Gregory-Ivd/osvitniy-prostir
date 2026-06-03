@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="uk" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Освітній простір №8 — презентація</title>
+<link rel="icon" href="brand/logo-mark.svg" type="image/svg+xml">
+<style>
+  :root{
+    --orange:#F39200; --green:#2E9E5B; --blue:#15356B; --blue2:#1E4A8F;
+    --bg:#F7F7F4; --surface:#FFFFFF; --ink:#222631; --muted:#5B6472; --line:#D9E0EC;
+    --blue-soft:#EAF0FA; --green-soft:#E7F5EC; --orange-soft:#FFF1DD;
+    --font:"e-Ukraine", Inter, "Segoe UI", system-ui, -apple-system, sans-serif;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{font-family:var(--font); background:var(--bg); color:var(--ink);
+    -webkit-font-smoothing:antialiased; overflow:hidden;}
+
+  /* смуга прогресу */
+  .pbar{position:fixed; top:0; left:0; height:4px; background:var(--orange); z-index:50; transition:width .3s;}
+
+  /* слайди */
+  .deck{height:100vh; width:100vw; position:relative;}
+  .slide{position:absolute; inset:0; display:none; flex-direction:column; justify-content:center;
+    align-items:flex-start; padding:6vh 7vw; opacity:0; transition:opacity .35s ease; overflow:hidden;}
+  .slide.on{display:flex; opacity:1;}
+  .slide>*{max-width:100%;}
+  .slide .eyebrow{color:var(--orange); font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+    font-size:clamp(.7rem,1.4vw,.95rem); margin-bottom:14px;}
+  .slide h1{color:var(--blue); font-size:clamp(1.8rem,5vw,3.6rem); line-height:1.06; margin-bottom:18px;}
+  .slide h2{color:var(--blue); font-size:clamp(1.4rem,3.6vw,2.5rem); line-height:1.12; margin-bottom:26px;}
+  .slide p{font-size:clamp(1.05rem,2.3vw,1.7rem); line-height:1.5; color:var(--ink); max-width:24ch;}
+  .slide .lead{font-size:clamp(1.4rem,3.6vw,2.9rem); line-height:1.3; color:var(--ink); max-width:20ch; font-weight:500;}
+  .slide .sub{color:var(--muted); font-size:clamp(.95rem,1.8vw,1.3rem); margin-top:16px; max-width:38ch;}
+  .accent-o{color:var(--orange);} .accent-g{color:var(--green);} .accent-b{color:var(--blue);}
+
+  /* титульний слайд (темний) */
+  .slide.title{background:linear-gradient(135deg,var(--blue) 0%, var(--blue2) 100%); color:#fff;}
+  .slide.title .eyebrow{color:#FFD79A;}
+  .slide.title h1{color:#fff; font-size:clamp(2.1rem,6vw,4rem);}
+  .slide.title .sub{color:#cfe0ff;}
+  .slide.title .logo{height:clamp(40px,5vw,60px); width:auto; margin-bottom:28px;}
+
+  /* фінальний слайд */
+  .slide.final{background:linear-gradient(135deg,#16302A 0%, var(--blue) 100%); color:#fff;}
+  .slide.final .lead{color:#fff;} .slide.final .sub{color:#cfe0ff;}
+  .slide.final a{color:#FFD79A; font-weight:700; word-break:break-all;}
+
+  /* сітки/списки */
+  .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:18px; margin-top:8px; max-width:1100px;}
+  .card{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:20px 22px;
+    box-shadow:0 8px 24px rgba(21,53,107,.07);}
+  .card b{display:block; color:var(--blue); font-size:clamp(1.05rem,2vw,1.35rem); margin-bottom:6px;}
+  .card span{color:var(--muted); font-size:clamp(.88rem,1.5vw,1.05rem); line-height:1.45;}
+
+  .stats{display:flex; flex-wrap:wrap; gap:36px 56px; margin-top:10px;}
+  .stat .num{color:var(--orange); font-size:clamp(2.6rem,7vw,5rem); font-weight:800; line-height:1;}
+  .stat .cap{color:var(--ink); font-size:clamp(.95rem,1.8vw,1.25rem); margin-top:8px; max-width:16ch;}
+
+  .timeline{display:flex; flex-direction:column; gap:14px; margin-top:6px; max-width:1000px;}
+  .tl{display:flex; gap:18px; align-items:baseline;}
+  .tl .yr{color:var(--orange); font-weight:800; font-size:clamp(1rem,2.2vw,1.5rem); min-width:5.5ch;}
+  .tl .ev{font-size:clamp(1rem,2.1vw,1.45rem); color:var(--ink);}
+  .tl .ev b{color:var(--blue);}
+
+  .cols{display:grid; grid-template-columns:1fr 1fr; gap:30px; max-width:1100px; margin-top:6px;}
+  .cols h3{color:var(--orange); font-size:clamp(1.1rem,2.4vw,1.6rem); margin-bottom:12px;}
+  .cols li{font-size:clamp(.95rem,1.9vw,1.25rem); line-height:1.5; margin:8px 0; list-style:none; padding-left:26px; position:relative;}
+  .cols li::before{content:"→"; position:absolute; left:0; color:var(--green); font-weight:700;}
+
+  .check li{font-size:clamp(1rem,2.1vw,1.45rem); line-height:1.5; margin:12px 0; list-style:none;
+    padding-left:38px; position:relative; max-width:36ch;}
+  .check li::before{content:"✓"; position:absolute; left:0; top:0; color:#fff; background:var(--green);
+    width:26px; height:26px; border-radius:50%; display:grid; place-items:center; font-size:.9rem; font-weight:800;}
+
+  .blocks{display:flex; flex-direction:column; gap:10px; max-width:1100px; margin-top:4px;}
+  .blk{font-size:clamp(.98rem,2vw,1.35rem); line-height:1.4;}
+  .blk b{color:var(--blue);} .blk span{color:var(--muted);}
+
+  /* керування */
+  .ctrl{position:fixed; bottom:18px; right:22px; display:flex; gap:8px; z-index:40;}
+  .ctrl button{border:1px solid var(--line); background:var(--surface); color:var(--ink);
+    border-radius:10px; width:46px; height:42px; font-size:1.2rem; cursor:pointer; font-family:var(--font);}
+  .ctrl button:hover{border-color:var(--blue);}
+  .counter{position:fixed; bottom:24px; left:50%; transform:translateX(-50%); z-index:40;
+    color:var(--muted); font-size:.95rem; font-weight:700; letter-spacing:.05em;}
+  .dots{position:fixed; bottom:60px; left:50%; transform:translateX(-50%); z-index:40; display:flex; gap:8px;}
+  .dot{width:9px; height:9px; border-radius:50%; background:var(--line); cursor:pointer; border:none; padding:0;}
+  .dot.on{background:var(--orange); transform:scale(1.25);}
+  .fs{position:fixed; top:14px; right:22px; z-index:40; border:1px solid var(--line); background:var(--surface);
+    color:var(--muted); border-radius:10px; width:42px; height:38px; cursor:pointer; font-size:1rem;}
+  .hint{position:fixed; bottom:24px; left:22px; z-index:40; color:var(--muted); font-size:.8rem;}
+
+  @media (max-width:680px){
+    .slide{padding:7vh 7vw;}
+    .cols{grid-template-columns:1fr;}
+    .counter,.hint{font-size:.78rem;}
+    .dots{bottom:54px;}
+  }
+  @media print{ .ctrl,.dots,.counter,.fs,.hint,.pbar{display:none!important;}
+    .slide{display:flex!important; opacity:1!important; position:relative; height:100vh; page-break-after:always;} }
+</style>
+</head>
+<body>
+<div class="pbar" id="pbar"></div>
+<button class="fs" id="fsBtn" title="На весь екран">⛶</button>
+
+<div class="deck" id="deck">
+
+  <!-- 1 -->
+  <section class="slide title on">
+    <img class="logo" src="brand/logo.svg" alt="Освітній Простір №8">
+    <div class="eyebrow">Пілотний проєкт · ДУ «Житомирська УВП №8»</div>
+    <h1>Освітній простір №8</h1>
+    <div class="lead" style="color:#fff; font-weight:600;">Курс цифрової грамотності, створений засудженими</div>
+    <div class="sub">Презентація продукту для керівництва Державної кримінально-виконавчої служби України</div>
+  </section>
+
+  <!-- 2 -->
+  <section class="slide">
+    <div class="eyebrow">Коротко</div>
+    <div class="lead">Засуджені опанували цифрові навички — від основ до штучного інтелекту — і <span class="accent-o">власноруч створили навчальний застосунок</span>.</div>
+  </section>
+
+  <!-- 3 -->
+  <section class="slide">
+    <div class="eyebrow">Звідки це виросло</div>
+    <h2>Від книг — до працевлаштування</h2>
+    <div class="timeline">
+      <div class="tl"><div class="yr">2020</div><div class="ev">Право на планшети й комп'ютер в установі</div></div>
+      <div class="tl"><div class="yr">2021</div><div class="ev"><b>Біржа праці</b> workprison.com.ua — перша в Україні для осіб у місцях позбавлення волі</div></div>
+      <div class="tl"><div class="yr">2022</div><div class="ev">Запуск <b>курсу цифрової грамотності</b></div></div>
+      <div class="tl"><div class="yr">2023</div><div class="ev"><b>12 сертифікатів</b>, з них <b>4 працевлаштовані</b> (веб-розробка, маркетинг, контент)</div></div>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section class="slide">
+    <div class="eyebrow">Що зроблено</div>
+    <h2>Готовий навчальний застосунок</h2>
+    <div class="grid">
+      <div class="card"><b>13 модулів</b><span>Від основ комп'ютера до штучного інтелекту та оркестрації інструментів</span></div>
+      <div class="card"><b>Тренажер набору</b><span>Сліпий набір на клавіатурі з покроковими уроками й оцінкою</span></div>
+      <div class="card"><b>Кабінети</b><span>Окремі кабінети учнів і викладача на спільному комп'ютері</span></div>
+      <div class="card"><b>Сертифікат</b><span>Автоматичний сертифікат із картою профілю учня</span></div>
+      <div class="card"><b>Працює офлайн</b><span>Не потребує інтернету — лише комп'ютер установи</span></div>
+      <div class="card"><b>Уже онлайн</b><span>Робоча версія доступна й наповнена повністю</span></div>
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <section class="slide">
+    <div class="eyebrow">Зміст курсу</div>
+    <h2>Шлях від основ до сучасних навичок</h2>
+    <div class="blocks">
+      <div class="blk"><b>Основи.</b> <span>Комп'ютер, файли, інтернет, цифрова безпека.</span></div>
+      <div class="blk"><b>Цифрове громадянство.</b> <span>«Дія», електронні документи й послуги.</span></div>
+      <div class="blk"><b>Продуктивність і праця.</b> <span>Документи, резюме, портфоліо, Біржа праці.</span></div>
+      <div class="blk"><b>Штучний інтелект.</b> <span>Як працює, промптинг, критичне мислення.</span></div>
+      <div class="blk"><b>Оркестрація (рівень IT).</b> <span>Поєднання інструментів у робочі процеси.</span></div>
+      <div class="blk"><b>Підсумок.</b> <span>Особистий цифровий план і сертифікат.</span></div>
+    </div>
+  </section>
+
+  <!-- 6 -->
+  <section class="slide">
+    <div class="eyebrow">Як це працює</div>
+    <h2>Просто для учня, прозоро для викладача</h2>
+    <div class="cols">
+      <div>
+        <h3>Учень</h3>
+        <ul>
+          <li>власний кабінет із входом за PIN;</li>
+          <li>проходить модулі у своєму темпі;</li>
+          <li>тренажер набору й самостійні завдання;</li>
+          <li>отримує сертифікат із картою профілю.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Викладач</h3>
+        <ul>
+          <li>огляд групи й рівнів учнів;</li>
+          <li>імпорт робіт із файлів;</li>
+          <li>контроль прогресу.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 -->
+  <section class="slide">
+    <div class="eyebrow">Вимірюваний результат</div>
+    <h2>Поступ до самостійності</h2>
+    <p style="max-width:34ch;">У застосунок вбудовано механізм, який <span class="accent-b">стимулює</span>, <span class="accent-b">аналізує</span> й <span class="accent-b">оцінює</span> рівень самостійності кожного учня.</p>
+    <div class="sub">Він поступово знижує підказки й веде людину від навчання з підтримкою до самостійної роботи, а наприкінці формує сертифікат із картою сильних сторін.</div>
+  </section>
+
+  <!-- 8 -->
+  <section class="slide">
+    <div class="eyebrow">Безпека</div>
+    <h2>Конфіденційність і контроль</h2>
+    <ul class="check">
+      <li>Дані зберігаються <b>лише локально</b>, на комп'ютері установи.</li>
+      <li>Нічого не передається в інтернет; персональні дані не збираються на сервер.</li>
+      <li>Доступ і робота — за встановленим порядком, <b>під наглядом</b>.</li>
+      <li>Без телефонів і зовнішніх каналів зв'язку.</li>
+      <li>Результати переносяться файлом, який контролює установа.</li>
+    </ul>
+  </section>
+
+  <!-- 9 -->
+  <section class="slide">
+    <div class="eyebrow">Цінність для системи</div>
+    <h2>Що це дає виконанню покарань</h2>
+    <div class="cols">
+      <div><ul>
+        <li>реінтеграція через реальні, потрібні навички;</li>
+        <li>шанс на легальну роботу після звільнення;</li>
+        <li>зайнятість і мотивація під час відбування.</li>
+      </ul></div>
+      <div><ul>
+        <li>мінімальна вартість упровадження;</li>
+        <li>повний контроль установи над процесом;</li>
+        <li>працює офлайн, без ризиків доступу до мережі.</li>
+      </ul></div>
+    </div>
+  </section>
+
+  <!-- 10 -->
+  <section class="slide">
+    <div class="eyebrow">Перспектива</div>
+    <h2>Куди рухаємося</h2>
+    <ul class="check">
+      <li>Онлайн-версія <b>вже працює</b> і наповнена повністю.</li>
+      <li>Застосунки для <b>Windows і Android</b> — встановлення з флешки, без інтернету.</li>
+      <li>Готовність <b>масштабувати на інші установи</b> України.</li>
+    </ul>
+  </section>
+
+  <!-- 11 -->
+  <section class="slide final">
+    <div class="eyebrow">Підсумок</div>
+    <div class="lead">Засуджені здатні не лише навчатися, а й <span style="color:#FFD79A;">створювати корисний продукт</span>.</div>
+    <div class="sub">Просимо підтримати масштабування «Освітнього простору» на інші установи виконання покарань.</div>
+    <div class="sub" style="margin-top:24px;">Подивитися застосунок:<br><a href="https://gregory-ivd.github.io/osvitniy-prostir/" target="_blank" rel="noopener">gregory-ivd.github.io/osvitniy-prostir</a></div>
+  </section>
+
+</div>
+
+<div class="dots" id="dots"></div>
+<div class="counter" id="counter">1 / 11</div>
+<div class="ctrl">
+  <button id="prev" title="Назад">‹</button>
+  <button id="next" title="Далі">›</button>
+</div>
+<div class="hint">← → або клік — гортати · F — на весь екран</div>
+
+<script>
+(function(){
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const dotsBox = document.getElementById('dots');
+  const counter = document.getElementById('counter');
+  const pbar = document.getElementById('pbar');
+  let i = 0;
+
+  slides.forEach((s,idx)=>{
+    const d = document.createElement('button'); d.className='dot'+(idx===0?' on':'');
+    d.addEventListener('click', ()=> go(idx));
+    dotsBox.appendChild(d);
+  });
+  const dots = Array.from(dotsBox.children);
+
+  function go(n){
+    i = Math.max(0, Math.min(slides.length-1, n));
+    slides.forEach((s,idx)=> s.classList.toggle('on', idx===i));
+    dots.forEach((d,idx)=> d.classList.toggle('on', idx===i));
+    counter.textContent = (i+1)+' / '+slides.length;
+    pbar.style.width = (100*(i+1)/slides.length)+'%';
+  }
+  function nextS(){ go(i+1); }
+  function prevS(){ go(i-1); }
+
+  document.getElementById('next').addEventListener('click', nextS);
+  document.getElementById('prev').addEventListener('click', prevS);
+  document.getElementById('fsBtn').addEventListener('click', toggleFs);
+
+  document.addEventListener('keydown', e=>{
+    if(['ArrowRight','PageDown',' '].includes(e.key)){ e.preventDefault(); nextS(); }
+    else if(['ArrowLeft','PageUp'].includes(e.key)){ e.preventDefault(); prevS(); }
+    else if(e.key==='Home'){ go(0); }
+    else if(e.key==='End'){ go(slides.length-1); }
+    else if(e.key==='f'||e.key==='F'){ toggleFs(); }
+  });
+  // клік по правій/лівій половині екрана
+  document.getElementById('deck').addEventListener('click', e=>{
+    if(e.target.closest('a')||e.target.closest('button')) return;
+    (e.clientX > window.innerWidth/2) ? nextS() : prevS();
+  });
+  function toggleFs(){
+    if(!document.fullscreenElement){ document.documentElement.requestFullscreen?.(); }
+    else{ document.exitFullscreen?.(); }
+  }
+  go(0);
+})();
+</script>
+</body>
+</html>
