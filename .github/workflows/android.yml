@@ -52,6 +52,9 @@ jobs:
       - name: Синхронізувати Capacitor
         run: npx cap sync android
 
+      - name: Згенерувати іконки й сплеш застосунку
+        run: npx @capacitor/assets generate --assetPath appicon --android
+
       - uses: android-actions/setup-android@v3
 
       - name: Прийняти ліцензії та поставити SDK

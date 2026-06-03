@@ -7,7 +7,8 @@
   "main": "electron/main.js",
   "scripts": {
     "start": "electron .",
-    "dist": "electron-builder --win portable"
+    "icons": "node scripts/make-icons.js",
+    "dist": "electron-builder --win portable && node scripts/set-exe-icon.js"
   },
   "build": {
     "appId": "ua.osvitniyprostir8.course",
@@ -17,6 +18,7 @@
     },
     "files": [
       "electron/**",
+      "build/icon.png",
       "index.html",
       "kabinet-vykladacha.html",
       "zayava.html",
@@ -32,15 +34,21 @@
     ],
     "win": {
       "target": "portable",
-      "signAndEditExecutable": false
+      "signAndEditExecutable": false,
+      "icon": "build/icon.ico"
     },
     "portable": {
       "artifactName": "OsvitniyProstir8-${version}.exe"
     }
   },
   "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@resvg/resvg-js": "^2.6.2",
     "electron": "^42.3.3",
-    "electron-builder": "^26.8.1"
+    "electron-builder": "^26.8.1",
+    "png-to-ico": "^3.0.1",
+    "rcedit": "^5.0.2",
+    "sharp": "^0.34.5"
   },
   "dependencies": {
     "@capacitor/android": "^8.4.0",
