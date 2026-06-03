@@ -1,0 +1,76 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'index.html'
+      - 'kabinet-vykladacha.html'
+      - 'zayava.html'
+      - 'prezentatsiya.html'
+      - 'css/**'
+      - 'js/**'
+      - 'content/**'
+      - 'assets/**'
+      - 'brand/**'
+      - 'certificate/**'
+      - 'capacitor.config.json'
+      - '.github/workflows/android.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Install npm deps (без бінарника Electron)
+        run: npm ci
+        env:
+          ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
+
+      - name: Зібрати веб-ассети у www/
+        run: |
+          rm -rf www && mkdir -p www
+          cp -r index.html kabinet-vykladacha.html zayava.html prezentatsiya.html \
+                css js content assets brand certificate www/
+
+      - name: Додати платформу Android
+        run: npx cap add android
+
+      - name: Синхронізувати Capacitor
+        run: npx cap sync android
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Прийняти ліцензії та поставити SDK
+        run: |
+          yes | sdkmanager --licenses >/dev/null 2>&1 || true
+          sdkmanager "platforms;android-35" "build-tools;35.0.0" "platform-tools"
+
+      - name: Зібрати debug APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: Перейменувати APK
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk OsvitniyProstir8.apk
+
+      - name: Викласти APK як артефакт
+        uses: actions/upload-artifact@v4
+        with:
+          name: OsvitniyProstir8-apk
+          path: OsvitniyProstir8.apk
+          if-no-files-found: error
