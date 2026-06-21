@@ -21,7 +21,7 @@
     questions.forEach((item, qi) => {
       const q = el("div", "q");
       q.appendChild(el("div", "qtext", `${qi + 1}. ${item.q}`));
-      item.options.forEach((opt, oi) => {
+      (item.options || []).forEach((opt, oi) => {
         const label = el("label", "opt");
         const input = el("input");
         input.type = "radio"; input.name = `${moduleId}-q${qi}`; input.value = oi;

@@ -29,11 +29,18 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: 'npm'
 
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '21'
+
+      - name: Кеш debug keystore (стабільний підпис між збірками)
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: android-debug-keystore-v1
 
       - name: Install npm deps (без бінарника Electron)
         run: npm ci
@@ -76,4 +83,5 @@ jobs:
         with:
           name: OsvitniyProstir8-apk
           path: OsvitniyProstir8.apk
+          retention-days: 365
           if-no-files-found: error

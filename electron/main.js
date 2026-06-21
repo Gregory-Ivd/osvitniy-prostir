@@ -6,7 +6,7 @@
 const { app, BrowserWindow, ipcMain, dialog, Menu, shell } = require("electron");
 const path = require("path");
 const fs = require("fs");
-const { execSync } = require("child_process");
+const { spawnSync } = require("child_process");
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -43,11 +43,11 @@ app.on("window-all-closed", () => { if (process.platform !== "darwin") app.quit(
 // Пошук знімного диска (флешки) — Windows: DriveType=2 (Removable)
 function findRemovableDrive() {
   try {
-    const out = execSync(
-      'powershell -NoProfile -Command "Get-CimInstance Win32_LogicalDisk -Filter \\"DriveType=2\\" | Select-Object -ExpandProperty DeviceID"',
-      { encoding: "utf8", timeout: 5000 }
-    );
-    const line = out.split(/\r?\n/).map(s => s.trim()).filter(Boolean)[0];
+    const r = spawnSync("powershell", [
+      "-NoProfile", "-Command",
+      "Get-CimInstance Win32_LogicalDisk -Filter 'DriveType=2' | Select-Object -ExpandProperty DeviceID"
+    ], { encoding: "utf8", timeout: 2000 });
+    const line = (r.stdout || "").split(/\r?\n/).map(s => s.trim()).filter(Boolean)[0];
     if (line && /^[A-Za-z]:$/.test(line)) return line + "\\";
   } catch (e) { /* немає флешки або не Windows */ }
   return null;
@@ -55,6 +55,8 @@ function findRemovableDrive() {
 
 // Збереження результату: діалог, за замовчуванням — на флешку (якщо є), інакше Робочий стіл
 ipcMain.handle("save-results", async (e, { filename, json }) => {
+  if (typeof filename !== "string" || typeof json !== "string") return { ok: false, error: "bad args" };
+  filename = path.basename(filename);
   const usb = findRemovableDrive();
   const base = usb || app.getPath("desktop");
   const win = BrowserWindow.getFocusedWindow();

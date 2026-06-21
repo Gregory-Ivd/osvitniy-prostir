@@ -29,7 +29,16 @@
   function load() {
     try {
       const raw = localStorage.getItem(KEYf());
-      if (raw) return Object.assign(blank(), JSON.parse(raw));
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        const b = blank();
+        const merged = Object.assign(b, parsed);
+        merged.signals = Object.assign(b.signals, parsed.signals || {});
+        merged.modules  = parsed.modules  || {};
+        merged.quiz     = parsed.quiz     || {};
+        merged.typing   = parsed.typing   || {};
+        return merged;
+      }
     } catch (e) { /* ignore */ }
     return blank();
   }

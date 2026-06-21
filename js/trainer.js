@@ -121,6 +121,11 @@
   ];
 
   function render(container){
+    // На Android без фізичної клавіатури тренажер не реагує на натискання
+    if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+      container.appendChild(elc("div","callout warn",
+        "Тренажер сліпого набору потребує фізичну клавіатуру. Підключіть USB-клавіатуру до планшета або використовуйте комп’ютер."));
+    }
     const root = elc("div","trainer");
     root.tabIndex = 0; // фокус для перехоплення клавіш
 
