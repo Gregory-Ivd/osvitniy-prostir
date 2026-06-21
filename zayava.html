@@ -55,8 +55,11 @@
     </div>
 
     <div class="za-tools no-print">
-      <button class="btn primary" onclick="window.print()">🖨 Друк</button>
+      <button class="btn primary" id="printBtn">🖨 Друк</button>
       <button class="btn ghost" id="clearBtn">Очистити поля</button>
+    </div>
+    <div id="androidPrintNote" class="za-hint" style="display:none">
+      Друк доступний лише на комп'ютері або у Windows-версії. Зверніться до викладача.
     </div>
 
     <div class="za-sheet">
@@ -116,6 +119,14 @@
         document.body.appendChild(s);
       }catch(e){}
     })();
+    var isAndroid = window.Capacitor && window.Capacitor.isNativePlatform();
+    var printBtn = document.getElementById("printBtn");
+    if (isAndroid) {
+      printBtn.style.display = "none";
+      document.getElementById("androidPrintNote").style.display = "block";
+    } else {
+      printBtn.addEventListener("click", function(){ window.print(); });
+    }
     document.getElementById("clearBtn").addEventListener("click", function(){
       ["fromName","fromUnit","resource","purpose","addressee2"].forEach(function(id){
         var el=document.getElementById(id); if(el) el.value="";

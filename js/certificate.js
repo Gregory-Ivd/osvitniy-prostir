@@ -98,7 +98,9 @@
       </section>
 
       <div class="cert-actions no-print">
-        <button class="btn primary" onclick="window.print()">🖨 Друк / зберегти в PDF</button>
+        ${(window.Capacitor && window.Capacitor.isNativePlatform())
+          ? '<p class="callout warn" style="margin:0">Друк доступний лише на комп\'ютері або у Windows-версії. Зверніться до викладача.</p>'
+          : '<button class="btn primary" onclick="window.print()">🖨 Друк / зберегти в PDF</button>'}
       </div>`;
   }
 
