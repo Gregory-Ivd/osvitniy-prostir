@@ -7,6 +7,15 @@
   const root = document.getElementById("teacher");
   const elc = (t,c,h)=>{const n=document.createElement(t); if(c)n.className=c; if(h!=null)n.innerHTML=h; return n;};
 
+  function toast(msg, type) {
+    let wrap = document.getElementById("toastWrap");
+    if (!wrap) { wrap = elc("div","toast-wrap"); wrap.id="toastWrap"; document.body.appendChild(wrap); }
+    const t = elc("div","toast"+(type?" t-"+type:""), msg);
+    wrap.appendChild(t);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>t.classList.add("in")));
+    setTimeout(()=>{ t.classList.remove("in"); setTimeout(()=>t.remove(),300); }, 3500);
+  }
+
   function row(p) {
     const prog = Cabinet.readProgress(p.id);
     const s = Certificate.summarize(prog);
@@ -41,7 +50,7 @@
     file.addEventListener("change", e=>{
       const files = Array.from(e.target.files||[]); if(!files.length) return;
       let ok=0, fail=0, pending=files.length;
-      const done = ()=>{ render(); alert("Імпортовано: "+ok+(fail?(" · не вдалося: "+fail):"")); };
+      const done = ()=>{ render(); toast("Імпортовано: "+ok+(fail?(" · не вдалося: "+fail):""), fail?"t-warn":"t-success"); };
       files.forEach(f=>{
         const r = new FileReader();
         r.onload = ()=>{ try { Cabinet.importProfile(JSON.parse(r.result), ""); ok++; } catch(err){ fail++; }
