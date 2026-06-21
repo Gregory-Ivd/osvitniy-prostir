@@ -62,6 +62,7 @@
           <div class="cert-kicker">СЕРТИФІКАТ</div>
           <div class="cert-sub">про проходження курсу цифрової грамотності проєкту «Освітній простір»</div>
           <div class="cert-name">${s.learner.name || "—"}</div>
+          <div class="cert-name-rule"></div>
           ${s.learner.group ? `<div class="cert-group">${s.learner.group}</div>` : ""}
           <div class="cert-level">Рівень ${lv.key}: <b>${lv.label}</b></div>
           <div class="cert-note">${lv.note}</div>

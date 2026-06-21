@@ -17,9 +17,18 @@
   });
   $("#menuToggle").addEventListener("click", ()=> $("#sidebar").classList.toggle("open"));
 
+  /* #9 — ESC закриває PIN-modal або мобільний sidebar */
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape") {
+      const overlay = document.getElementById("pinOverlay");
+      if (overlay) { overlay.remove(); return; }
+      $("#sidebar").classList.remove("open");
+    }
+  });
+
   /* ---------- РОЗМІР ТЕКСТУ (А− / А+) ---------- */
   const FS_KEY = "op8.fs";
-  const FS_STEPS = ["s","m","l","xl"];      // компактний / звичайний / великий / екран = 19 / 22 / 26 / 30px
+  const FS_STEPS = ["s","m","l","xl"];
   function applyFs(s){
     if(!FS_STEPS.includes(s)) s = "m";
     document.documentElement.setAttribute("data-fs", s);
@@ -38,19 +47,70 @@
   $("#fsDown").addEventListener("click", ()=> stepFs(-1));
   $("#fsUp").addEventListener("click",   ()=> stepFs(1));
 
+  /* ---------- #2 FADE-IN HELPERS ---------- */
+  function clearContent(){
+    const c = document.getElementById("content");
+    c.style.opacity = "0"; c.innerHTML = ""; window.scrollTo(0,0); return c;
+  }
+  function showContent(c){
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      c.style.transition="opacity .18s ease"; c.style.opacity="1";
+    }));
+  }
+
+  /* ---------- #6 TOAST ---------- */
+  function toast(msg, type) {
+    let wrap = document.getElementById("toastWrap");
+    if (!wrap) { wrap = elc("div","toast-wrap"); wrap.id="toastWrap"; document.body.appendChild(wrap); }
+    const t = elc("div","toast"+(type?" t-"+type:""), msg);
+    wrap.appendChild(t);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>t.classList.add("in")));
+    setTimeout(()=>{ t.classList.remove("in"); setTimeout(()=>t.remove(),300); }, 3500);
+  }
+
+  /* ---------- #5 PIN MODAL ---------- */
+  function openPinModal(p) {
+    const back = elc("div","pin-overlay"); back.id="pinOverlay";
+    const box  = elc("div","pin-box");
+    box.appendChild(elc("h2", null, "👤 " + p.name));
+    box.appendChild(elc("p","pin-sub", p.group || "Введи свій PIN для входу"));
+    const inp = elc("input","fld"); inp.type="password"; inp.inputMode="numeric";
+    inp.maxLength=4; inp.placeholder="••••"; inp.autocomplete="off";
+    box.appendChild(inp);
+    const err = elc("div","pin-err","");
+    box.appendChild(err);
+    const actions = elc("div","pin-actions");
+    const cancel  = elc("button","btn ghost","Скасувати");
+    const ok      = elc("button","btn primary","Увійти →");
+    actions.appendChild(cancel); actions.appendChild(ok);
+    box.appendChild(actions);
+    back.appendChild(box);
+    back.addEventListener("click", e=>{ if(e.target===back) back.remove(); });
+    document.body.appendChild(back);
+    requestAnimationFrame(()=>inp.focus());
+    function doLogin(){
+      if(Cabinet.login(p.id, inp.value)){
+        back.remove(); Progress.rebind(); gateAndRender();
+      } else {
+        err.textContent="Невірний PIN. Спробуй ще."; inp.value=""; inp.focus();
+      }
+    }
+    ok.addEventListener("click", doLogin);
+    cancel.addEventListener("click", ()=>back.remove());
+    inp.addEventListener("keydown", e=>{ if(e.key==="Enter") doLogin(); });
+  }
+
   /* ---------- КАБІНЕТ / ВХІД ---------- */
   function renderUserArea(){
     const area = $("#userArea"); area.innerHTML="";
     const a = Cabinet.active();
-    // Кнопка «Здати роботу» в бічній панелі — показуємо лише коли учень увійшов.
     const submit = $("#submitBtn");
     if(submit){
       submit.style.display = a ? "block" : "none";
       submit.onclick = ()=>{
         Cabinet.exportProfile();
         if(!(window.electronAPI && window.electronAPI.saveResults)){
-          alert("Файл з твоїм результатом збережено (зазвичай у теку «Завантаження»).\n\n" +
-                "Скопіюй його на флешку викладача — він додасть твій результат у журнал.");
+          toast("Файл збережено у «Завантаження». Скопіюй на флешку викладача.", "success");
         }
       };
     }
@@ -61,13 +121,12 @@
     const out = elc("button","iconbtn","Вийти"); out.title="Завершити сеанс";
     out.onclick = ()=>{ Cabinet.logout(); Progress.rebind(); location.hash=""; gateAndRender(); };
     area.appendChild(chip);
-    // Хмарна синхронізація — кнопка зʼявляється лише якщо хмару налаштовано (інакше повний офлайн).
     if(window.Sync && Sync.isEnabled()){
       const cloud = elc("button","iconbtn","☁"); cloud.title="Синхронізувати мій прогрес із хмарою";
       cloud.onclick = async ()=>{
         cloud.disabled=true; const t=cloud.textContent; cloud.textContent="…";
         try{ await Sync.pushActive(); cloud.textContent="✓"; }
-        catch(e){ cloud.textContent="✗"; alert("Не вдалося синхронізувати: "+e.message); }
+        catch(e){ cloud.textContent="✗"; toast("Не вдалося синхронізувати: "+e.message, "error"); }
         finally{ setTimeout(()=>{ cloud.textContent=t; cloud.disabled=false; }, 1500); }
       };
       area.appendChild(cloud);
@@ -77,13 +136,12 @@
 
   function renderLogin(){
     $("#sidebar").style.visibility = "hidden";
-    const c = $("#content"); c.innerHTML=""; window.scrollTo(0,0);
+    const c = clearContent();
     const box = elc("div","hero");
     box.appendChild(elc("div","tagline","Освітній Простір №8"));
     box.appendChild(elc("h1", null, "Хто навчається?"));
     box.appendChild(elc("p", null, "Оберіть свій кабінет або створіть новий. Прогрес кожного учня зберігається окремо на цьому комп'ютері."));
 
-    // наявні профілі
     const list = Cabinet.list();
     if(list.length){
       const cards = elc("div","cards");
@@ -97,7 +155,6 @@
       box.appendChild(cards);
     }
 
-    // новий учень
     const reg = elc("div","callout info");
     reg.appendChild(elc("div","c-title","➕ Я тут уперше"));
     reg.innerHTML += `
@@ -111,7 +168,7 @@
     const create = elc("button","btn primary","Створити кабінет і почати");
     create.onclick = ()=>{
       const name = $("#nName").value.trim();
-      if(!name){ alert("Вкажи прізвище та ім'я"); return; }
+      if(!name){ toast("Вкажи прізвище та ім'я", "warn"); return; }
       Cabinet.create(name, $("#nGroup").value, $("#nPin").value);
       Progress.rebind(); Progress.setLearner(name, $("#nGroup").value);
       gateAndRender();
@@ -119,7 +176,6 @@
     reg.appendChild(create);
     box.appendChild(reg);
 
-    // викладач
     const teach = elc("p", null,
       '<a href="kabinet-vykladacha.html">Кабінет викладача →</a>' +
       ' &nbsp;·&nbsp; <a href="zayava.html">Заява на доступ до онлайн-ресурсу →</a>' +
@@ -127,13 +183,11 @@
     teach.style.marginTop="18px";
     box.appendChild(teach);
     c.appendChild(box);
+    showContent(c);
   }
 
-  function askPin(p){
-    const pin = prompt(`Кабінет: ${p.name}\nВведи свій PIN (якщо ставив):`) ?? "";
-    if(Cabinet.login(p.id, pin)){ Progress.rebind(); gateAndRender(); }
-    else alert("Невірний PIN.");
-  }
+  /* #5 — askPin делегує до inline modal */
+  function askPin(p){ openPinModal(p); }
 
   function gateAndRender(){
     renderUserArea();
@@ -157,7 +211,6 @@
       if(m.level==="it") a.appendChild(elc("span","badge-it","IT"));
       nav.appendChild(a);
     });
-    // Окремий розділ (не модуль): тренажер сліпого набору
     if(window.Trainer){
       nav.appendChild(elc("div","nav-block","Практика"));
       const tr = elc("a","nav-item"); tr.href = "#/trainer";
@@ -166,7 +219,6 @@
       tr.appendChild(elc("span", null, "Тренажер набору"));
       nav.appendChild(tr);
     }
-    // Окремий розділ (не модуль): корисні посилання
     if(window.LINKS){
       nav.appendChild(elc("div","nav-block","Ресурси"));
       const lk = elc("a","nav-item"); lk.href = "#/links";
@@ -176,11 +228,23 @@
       nav.appendChild(lk);
     }
     updateProgress();
+    /* #3 — auto-scroll до активного пункту */
+    setTimeout(()=>{
+      const active = nav.querySelector(".nav-item.active");
+      if(active) active.scrollIntoView({ block:"nearest", behavior:"smooth" });
+    }, 80);
   }
+
+  /* #11 — SVG progress ring */
   function updateProgress(){
     const total = M.length, done = Progress.completedCount();
-    $("#progressFill").style.width = (100*done/total).toFixed(0)+"%";
-    $("#progressLabel").textContent = `Пройдено ${done} із ${total}`;
+    const circ = 100.53;
+    const fill = document.getElementById("progressFill");
+    if(fill) fill.style.strokeDashoffset = total ? (circ*(1-done/total)).toFixed(2) : circ;
+    const num = document.getElementById("progressRingNum");
+    if(num) num.textContent = done+"/"+total;
+    const lbl = document.getElementById("progressLabel");
+    if(lbl) lbl.textContent = (done===total && total>0) ? "Завершено!" : "Пройдено";
   }
 
   /* ---------- РЕНДЕР БЛОКІВ УРОКУ ---------- */
@@ -212,7 +276,7 @@
   /* ---------- РЕНДЕР МОДУЛЯ ---------- */
   function renderModule(m){
     Progress.visit(m.id);
-    const c = $("#content"); c.innerHTML = ""; window.scrollTo(0,0);
+    const c = clearContent();
 
     const head = elc("div","module-head");
     head.appendChild(elc("div","eyebrow", `${m.block} · Модуль ${m.num}`));
@@ -229,31 +293,39 @@
     (m.lessons||[]).forEach(b=> lesson.appendChild(renderBlock(b)));
     c.appendChild(lesson);
 
-    // Тест
     if(m.quiz && m.quiz.length){
       const qbox = elc("div"); c.appendChild(qbox);
       Quiz.render(qbox, m.quiz, m.id);
     }
 
-    // Рефлексія
+    /* #4 — рефлексія: input + «✓ збережено» badge з debounce */
     if(m.reflection && m.reflection.length){
       const r = elc("div","reflect");
       r.appendChild(elc("h2", null, "✍ Рефлексія"));
       r.appendChild(elc("p", null, "Кілька рядків чесно — частина твоєї карти самостійності."));
+      let saveTimer=null;
       m.reflection.forEach((q,i)=>{
-        r.appendChild(elc("label", null, `<strong>${q}</strong>`));
+        const lbl = elc("label");
+        lbl.appendChild(elc("strong",null,q));
+        const badge = elc("span","saved-badge","✓ збережено"); lbl.appendChild(badge);
+        r.appendChild(lbl);
         const ta = elc("textarea"); ta.dataset.qi=i;
         ta.value = (Progress.getReflection(m.id).split("\n###\n")[i]||"");
-        ta.addEventListener("change", ()=>{
-          const parts = Array.from(r.querySelectorAll("textarea")).map(t=>t.value);
-          Progress.setReflection(m.id, parts.join("\n###\n"));
+        ta.addEventListener("input", ()=>{
+          badge.classList.remove("show");
+          clearTimeout(saveTimer);
+          saveTimer = setTimeout(()=>{
+            const parts = Array.from(r.querySelectorAll("textarea")).map(t=>t.value);
+            Progress.setReflection(m.id, parts.join("\n###\n"));
+            badge.classList.add("show");
+            setTimeout(()=>badge.classList.remove("show"), 2000);
+          }, 600);
         });
         r.appendChild(ta);
       });
       c.appendChild(r);
     }
 
-    // Підвал: позначити пройденим + навігація
     const foot = elc("div","module-foot");
     const prev = M[m.num-1], next = M[m.num+1];
     const left = elc("div");
@@ -261,12 +333,18 @@
     const right = elc("div"); right.style.display="flex"; right.style.gap="10px";
     const doneBtn = elc("button","btn "+(Progress.isCompleted(m.id)?"ghost":"primary"),
       Progress.isCompleted(m.id) ? "✓ Пройдено" : "Позначити пройденим");
-    doneBtn.addEventListener("click", ()=>{ Progress.complete(m.id); buildNav();
-      doneBtn.textContent="✓ Пройдено"; doneBtn.className="btn ghost"; });
+    /* #7 — пульс nav-num при позначенні пройденим */
+    doneBtn.addEventListener("click", ()=>{
+      Progress.complete(m.id); buildNav();
+      doneBtn.textContent="✓ Пройдено"; doneBtn.className="btn ghost";
+      const navNum = document.querySelector(`.nav-item[href="#/${m.id}"] .nav-num`);
+      if(navNum){ navNum.classList.add("pulse"); setTimeout(()=>navNum.classList.remove("pulse"),600); }
+    });
     right.appendChild(doneBtn);
     if(next){ const b=elc("a","btn ghost",("Модуль "+next.num)+" →"); b.href=`#/${next.id}`; right.appendChild(b); }
     foot.appendChild(left); foot.appendChild(right);
     c.appendChild(foot);
+    showContent(c);
   }
 
   /* ---------- МОДАЛКА «ДОКЛАДНІШЕ» (плитки лендингу) ---------- */
@@ -301,7 +379,7 @@
 
   /* ---------- КОРИСНІ ПОСИЛАННЯ ---------- */
   function renderLinks(){
-    const c = $("#content"); c.innerHTML=""; window.scrollTo(0,0);
+    const c = clearContent();
     const L = window.LINKS || { groups:[] };
     const head = elc("div","module-head");
     head.appendChild(elc("div","eyebrow","Ресурси"));
@@ -331,18 +409,20 @@
     if(L.callToAction) c.appendChild(renderBlock({ type:"callout", variant:"task",
       title:"➕ Додати ресурс",
       html: L.callToAction + ' <a href="zayava.html">Заповнити заяву →</a>' }));
+    showContent(c);
   }
 
   /* ---------- ТРЕНАЖЕР НАБОРУ ---------- */
   function renderTrainer(){
-    const c = $("#content"); c.innerHTML=""; window.scrollTo(0,0);
+    const c = clearContent();
     if(window.Trainer) Trainer.render(c);
     else c.appendChild(elc("p", null, "Тренажер недоступний."));
+    showContent(c);
   }
 
   /* ---------- ЛЕНДИНГ ---------- */
   function renderHome(){
-    const c = $("#content"); c.innerHTML=""; window.scrollTo(0,0);
+    const c = clearContent();
     const meta = COURSE.meta||{};
     const hero = elc("div","hero");
     hero.appendChild(elc("div","tagline", meta.tagline||"Навчання як шлях"));
@@ -368,13 +448,13 @@
       cards.appendChild(card);
     });
     c.appendChild(cards);
+    showContent(c);
   }
 
   /* ---------- МАРШРУТ ---------- */
   let currentId = null;
   function render(){
     const hash = location.hash.replace(/^#\/?/, "");
-    // Повноекранний режим тренажера: згортаємо дерево модулів зліва.
     const layout = $(".layout"); if(layout) layout.classList.toggle("focus", hash==="trainer");
     if(!hash){ currentId=null; renderHome(); buildNav(); return; }
     if(hash==="links"){ currentId="links"; renderLinks(); buildNav(); $("#sidebar").classList.remove("open"); return; }

@@ -117,8 +117,10 @@ img,svg { max-width:100%; }
 .lesson p { margin:12px 0; }
 .lesson ul,.lesson ol { margin:12px 0; padding-left:22px; }
 .lesson li { margin:6px 0; }
-.lesson strong { color:var(--blue); }
-[data-theme="dark"] .lesson strong { color:#fff; }
+/* lesson h2-h4 — чорнило, не синій (#8) */
+.lesson h2, .lesson h3, .lesson h4 { color:var(--ink); }
+/* lesson strong — bold залишається bold, без синього (#1) */
+.lesson strong { font-weight:700; color:inherit; }
 
 /* ---- Картки/виноски ---- */
 .callout { border-radius:var(--radius); padding:14px 18px; margin:18px 0; border:1px solid var(--line);
@@ -321,3 +323,62 @@ a.link-card .card-more { color:var(--blue); word-break:break-all; }
   html { font-size:15px; }            /* роздатки — компактні, незалежно від обраного на екрані */
   body { background:#fff; font-size:12pt; }
 }
+
+/* ============================================================
+   ПРАВКИ СМАКУ (#2 fade, #5 pin, #6 toast, #7 pulse, #9 esc, #11 ring, #4 saved)
+   ============================================================ */
+
+/* #2 — плавна поява контенту */
+#content { transition:opacity .18s ease; }
+
+/* #7 — пульс при позначенні модуля пройденим */
+@keyframes pulse-done {
+  0%   { transform:scale(1); }
+  40%  { transform:scale(1.4); }
+  70%  { transform:scale(.92); }
+  100% { transform:scale(1); }
+}
+.nav-num.pulse { animation:pulse-done .5s ease; }
+
+/* #6 — toast */
+.toast-wrap { position:fixed; bottom:24px; right:24px; z-index:200;
+  display:flex; flex-direction:column; gap:8px; pointer-events:none; }
+.toast { background:var(--surface); border:1px solid var(--line); border-radius:12px;
+  padding:12px 18px; font-size:.88rem; color:var(--ink);
+  box-shadow:0 4px 20px rgba(0,0,0,.16);
+  opacity:0; transform:translateY(10px); transition:opacity .2s, transform .2s;
+  pointer-events:auto; max-width:320px; }
+.toast.in { opacity:1; transform:translateY(0); }
+.toast.t-success { border-left:3px solid var(--green); }
+.toast.t-warn    { border-left:3px solid var(--orange); }
+.toast.t-error   { border-left:3px solid #d9534f; }
+
+/* #5 — PIN modal */
+.pin-overlay { position:fixed; inset:0; z-index:100;
+  background:rgba(13,23,38,.52); display:flex; align-items:center; justify-content:center;
+  padding:20px; backdrop-filter:blur(2px); animation:fadeInOverlay .15s; }
+@keyframes fadeInOverlay { from{opacity:0} to{opacity:1} }
+.pin-box { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+  box-shadow:var(--shadow); max-width:340px; width:100%; padding:28px 26px 22px; }
+.pin-box h2 { margin:0 0 4px; font-size:1.05rem; }
+.pin-box .pin-sub { color:var(--muted); font-size:.82rem; margin:0 0 16px; }
+.pin-box input { width:100%; margin:0 0 6px; }
+.pin-err { color:#d9534f; font-size:.8rem; min-height:1.1em; margin-bottom:10px; }
+.pin-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:4px; }
+
+/* #4 — збережено badge у рефлексії */
+.saved-badge { display:inline-block; font-size:.7rem; color:var(--green); font-weight:700;
+  opacity:0; transition:opacity .25s; margin-left:8px; }
+.saved-badge.show { opacity:1; }
+
+/* #11 — progress ring */
+.prog-ring-wrap { display:flex; flex-direction:column; align-items:center; gap:4px; margin:10px 0 10px; }
+.prog-ring-outer { position:relative; width:72px; height:72px; }
+.prog-ring { width:72px; height:72px; transform:rotate(-90deg); }
+.prog-ring-bg   { fill:none; stroke:var(--line); stroke-width:4; }
+.prog-ring-fill { fill:none; stroke:url(#progGrad); stroke-width:4; stroke-linecap:round;
+  stroke-dasharray:100.53; stroke-dashoffset:100.53;
+  transition:stroke-dashoffset .6s ease; }
+.prog-ring-num { position:absolute; inset:0; display:grid; place-items:center;
+  font-size:.82rem; font-weight:800; color:var(--blue); pointer-events:none; }
+.prog-ring-wrap .progress-label { font-size:.64rem; color:var(--muted); text-align:center; }
