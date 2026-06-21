@@ -33,5 +33,12 @@
   <script src="js/cabinet.js"></script>
   <script src="js/certificate.js"></script>
   <script src="js/instructor.js"></script>
+  <script>
+    document.addEventListener("keydown", function(e){
+      if(e.key==="Escape"){
+        var o=document.getElementById("pinResetOverlay"); if(o) o.remove();
+      }
+    });
+  </script>
 </body>
 </html>

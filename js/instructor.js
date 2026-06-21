@@ -28,9 +28,60 @@
       <td><span class="lvl lvl${lv.key}">Р${lv.key}</span> ${lv.label}</td>
       <td style="text-align:right; white-space:nowrap">
         <a class="btn ghost" href="certificate/sertyfikat.html?id=${encodeURIComponent(p.id)}">Сертифікат</a>
+        <button class="iconbtn" data-pin="${p.id}" title="Скинути PIN">🔑</button>
         <button class="iconbtn" data-del="${p.id}" title="Видалити профіль">🗑</button>
       </td>`;
     return tr;
+  }
+
+  function openPinReset(id, name) {
+    const overlay = elc("div","pin-overlay"); overlay.id="pinResetOverlay";
+    const box = elc("div","pin-box");
+    box.appendChild(elc("h2",null,"🔑 Змінити PIN"));
+    box.appendChild(elc("p","pin-sub","Учень: " + name));
+    const inp = elc("input","fld"); inp.type="password"; inp.inputMode="numeric";
+    inp.maxLength=4; inp.placeholder="Новий PIN (або порожньо — без PIN)"; inp.autocomplete="off";
+    box.appendChild(inp);
+    const actions = elc("div","pin-actions");
+    const cancel = elc("button","btn ghost","Скасувати");
+    const ok = elc("button","btn primary","Зберегти");
+    actions.appendChild(cancel); actions.appendChild(ok);
+    box.appendChild(actions);
+    overlay.appendChild(box);
+    overlay.addEventListener("click", e=>{ if(e.target===overlay) overlay.remove(); });
+    document.body.appendChild(overlay);
+    requestAnimationFrame(()=>inp.focus());
+    ok.addEventListener("click", ()=>{
+      Cabinet.setPin(id, inp.value);
+      overlay.remove();
+      toast("PIN учня змінено", "t-success");
+    });
+    cancel.addEventListener("click", ()=>overlay.remove());
+    inp.addEventListener("keydown", e=>{ if(e.key==="Enter") ok.click(); });
+  }
+
+  function exportCSV() {
+    const list = Cabinet.list();
+    if (!list.length) { toast("Немає жодного учня", "t-warn"); return; }
+    const rows = [["Імʼя","Група","Модулів","Із","Тести %","Рівень","Мітка рівня"]];
+    list.forEach(p=>{
+      const prog = Cabinet.readProgress(p.id);
+      const s = Certificate.summarize(prog);
+      const lv = Certificate.level(s);
+      rows.push([p.name, p.group||"", s.completed, s.total, s.quizAvgPercent, "Р"+lv.key, lv.label]);
+    });
+    const csv = "﻿" + rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(",")).join("\r\n");
+    const blob = new Blob([csv],{type:"text/csv;charset=utf-8"});
+    const a = document.createElement("a"); a.href=URL.createObjectURL(blob);
+    a.download="OP8_students.csv"; document.body.appendChild(a); a.click(); a.remove();
+    toast("CSV завантажено — відкрий у Excel", "t-success");
+  }
+
+  function printAll() {
+    const list = Cabinet.list();
+    if (!list.length) { toast("Немає жодного учня", "t-warn"); return; }
+    const ids = list.map(p=>encodeURIComponent(p.id)).join(",");
+    window.open("certificate/sertyfikat.html?ids="+ids, "_blank");
   }
 
   function render() {
@@ -40,6 +91,15 @@
     const head = elc("div");
     head.innerHTML = `<h1>Кабінет викладача</h1>
       <p class="muted">Учнів на цьому комп'ютері: <b>${list.length}</b>. Дані зберігаються локально й не передаються в інтернет.</p>`;
+    if (list.length) {
+      const csvBtn = elc("button","btn ghost","⬇ Завантажити таблицю CSV");
+      csvBtn.style.marginRight = "8px";
+      csvBtn.addEventListener("click", exportCSV);
+      head.appendChild(csvBtn);
+      const printBtn = elc("button","btn ghost","🖨 Всі сертифікати");
+      printBtn.addEventListener("click", printAll);
+      head.appendChild(printBtn);
+    }
     root.appendChild(head);
 
     // імпорт
@@ -73,6 +133,12 @@
     root.appendChild(table);
 
     table.addEventListener("click", e=>{
+      const pinId = e.target.getAttribute && e.target.getAttribute("data-pin");
+      if (pinId) {
+        const prof = Cabinet.getProfile(pinId);
+        openPinReset(pinId, prof ? prof.name : "");
+        return;
+      }
       const id = e.target.getAttribute && e.target.getAttribute("data-del");
       if(id && confirm("Видалити профіль цього учня з цього комп'ютера?")){ Cabinet.remove(id); render(); }
     });

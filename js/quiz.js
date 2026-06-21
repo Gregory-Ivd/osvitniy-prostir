@@ -63,7 +63,7 @@
           }
           q.querySelectorAll("input").forEach(i => i.disabled = true);
         });
-        if (window.Progress) Progress.setQuiz(moduleId, score, questions.length);
+        if (!window._demo && window.Progress) Progress.setQuiz(moduleId, score, questions.length);
         const pct = Math.round(100 * score / questions.length);
         result.textContent = `Результат: ${score} із ${questions.length} (${pct}%). ` +
           (pct >= 70 ? "Добре! Можна рухатися далі." : "Переглянь матеріал і спробуй ще.");

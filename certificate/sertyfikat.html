@@ -18,10 +18,22 @@
   <script src="../js/certificate.js"></script>
   <script>
     (function(){
-      var id = new URLSearchParams(location.search).get("id") || Cabinet.activeId();
-      if(!id){ document.getElementById("cert").innerHTML =
-        "<p style='text-align:center;padding:40px'>Не вказано учня. Відкрий сертифікат із кабінету викладача або увійди у свій кабінет.</p>"; return; }
-      Certificate.render(document.getElementById("cert"), id);
+      var params = new URLSearchParams(location.search);
+      var ids = (params.get("ids")||"").split(",").map(function(s){return decodeURIComponent(s.trim());}).filter(Boolean);
+      var single = params.get("id") || Cabinet.activeId();
+      if(ids.length === 0 && single) ids = [single];
+      if(!ids.length){
+        document.getElementById("cert").innerHTML =
+          "<p style='text-align:center;padding:40px'>Не вказано учня. Відкрий сертифікат із кабінету викладача або увійди у свій кабінет.</p>";
+        return;
+      }
+      var wrap = document.getElementById("cert");
+      ids.forEach(function(id){
+        var div = document.createElement("div");
+        Certificate.render(div, id);
+        wrap.appendChild(div);
+      });
+      if(ids.length > 1) setTimeout(function(){ window.print(); }, 600);
     })();
   </script>
 </body>

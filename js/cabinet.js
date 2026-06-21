@@ -55,6 +55,12 @@
     },
     logout() { reg.active = null; saveReg(reg); },
 
+    setPin(id, newPin) {
+      const p = reg.profiles[id]; if (!p) return false;
+      p.pin = hash(String(newPin || ""));
+      saveReg(reg); return true;
+    },
+
     remove(id) {
       delete reg.profiles[id];
       try { localStorage.removeItem(progKey(id)); } catch(e) {}
@@ -71,16 +77,17 @@
       const json = JSON.stringify(data, null, 2);
       const filename = "OP8_" + (p.name||"учень").replace(/\s+/g,"_") + ".json";
       // Десктоп (Electron) — нативне збереження на флешку; браузер — завантаження файлу.
+      const notify = window.toast || ((m) => alert(m));
       if (window.electronAPI && window.electronAPI.saveResults) {
         window.electronAPI.saveResults(filename, json).then(res => {
-          if (res && res.ok) alert("Збережено: " + res.path + (res.usb ? "\n(на флешку)" : ""));
-          else if (!(res && res.canceled)) alert("Не вдалося зберегти" + (res && res.error ? ": " + res.error : "."));
+          if (res && res.ok) notify("Збережено: " + res.path + (res.usb ? " (на флешку)" : ""), "t-success");
+          else if (!(res && res.canceled)) notify("Не вдалося зберегти" + (res && res.error ? ": " + res.error : "."), "t-error");
         });
         return;
       }
       // Android WebView не підтримує blob-download — показуємо явне повідомлення
       if (window.Capacitor && window.Capacitor.isNativePlatform()) {
-        alert("На Android збереження файлу недоступне.\nПопросіть викладача імпортувати дані через кабінет викладача.");
+        notify("На Android збереження файлу недоступне. Попросіть викладача імпортувати дані через кабінет викладача.", "t-warn");
         return;
       }
       const blob = new Blob([json], { type:"application/json" });

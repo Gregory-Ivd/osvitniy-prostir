@@ -26,6 +26,18 @@
     }
   });
 
+  /* ---------- РЕЖИМ ПРОЄКТОРА ---------- */
+  (function(){
+    const btn = document.getElementById("projBtn"); if(!btn) return;
+    const KEY = "op8.projector";
+    function apply(on){ document.body.classList.toggle("projector",on); btn.title=on?"Вийти з режиму проєктора":"Режим проєктора"; }
+    try{ apply(localStorage.getItem(KEY)==="1"); }catch(e){}
+    btn.addEventListener("click",()=>{
+      const on=!document.body.classList.contains("projector");
+      apply(on); try{ localStorage.setItem(KEY,on?"1":"0"); }catch(e){}
+    });
+  })();
+
   /* ---------- РОЗМІР ТЕКСТУ (А− / А+) ---------- */
   const FS_KEY = "op8.fs";
   const FS_STEPS = ["s","m","l","xl"];
@@ -182,6 +194,29 @@
       ' &nbsp;·&nbsp; <a href="prezentatsiya.html" target="_blank" rel="noopener">Презентація проєкту →</a>');
     teach.style.marginTop="18px";
     box.appendChild(teach);
+
+    const demoWrap = elc("div"); demoWrap.style.cssText="text-align:center;margin-top:14px;";
+    const demoBtn = elc("button","btn ghost","👁 Переглянути курс без реєстрації");
+    demoWrap.appendChild(demoBtn);
+    box.appendChild(demoWrap);
+    demoBtn.addEventListener("click", ()=>{
+      window._demo = true;
+      gateAndRender();
+      setTimeout(()=>{
+        const banner = document.createElement("div");
+        banner.id = "demoBanner";
+        banner.className = "callout warn";
+        banner.style.cssText = "display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 16px;max-width:760px;";
+        banner.innerHTML = '<span>👁 <b>Демо-режим</b> — прогрес не зберігається</span>';
+        const exitBtn = elc("button","btn ghost","Зареєструватися");
+        exitBtn.style.cssText="padding:5px 12px;font-size:.8rem;white-space:nowrap;";
+        exitBtn.addEventListener("click",()=>{ window._demo=false; gateAndRender(); });
+        banner.appendChild(exitBtn);
+        const content = document.getElementById("content");
+        if(content && !document.getElementById("demoBanner")) content.insertAdjacentElement("afterbegin", banner);
+      }, 150);
+    });
+
     c.appendChild(box);
     showContent(c);
   }
@@ -191,6 +226,7 @@
 
   function gateAndRender(){
     renderUserArea();
+    if (window._demo) { $("#sidebar").style.visibility = "visible"; render(); return; }
     if(!Cabinet.active()){ renderLogin(); return; }
     $("#sidebar").style.visibility = "visible";
     render();
@@ -312,6 +348,7 @@
         const ta = elc("textarea"); ta.dataset.qi=i;
         ta.value = (Progress.getReflection(m.id).split("\n###\n")[i]||"");
         ta.addEventListener("input", ()=>{
+          if (window._demo) return;
           badge.classList.remove("show");
           clearTimeout(saveTimer);
           saveTimer = setTimeout(()=>{
@@ -335,10 +372,18 @@
       Progress.isCompleted(m.id) ? "✓ Пройдено" : "Позначити пройденим");
     /* #7 — пульс nav-num при позначенні пройденим */
     doneBtn.addEventListener("click", ()=>{
+      if (window._demo) { toast("У демо-режимі прогрес не зберігається", "t-warn"); return; }
       Progress.complete(m.id); buildNav();
       doneBtn.textContent="✓ Пройдено"; doneBtn.className="btn ghost";
       const navNum = document.querySelector(`.nav-item[href="#/${m.id}"] .nav-num`);
       if(navNum){ navNum.classList.add("pulse"); setTimeout(()=>navNum.classList.remove("pulse"),600); }
+      const cnt = Progress.completedCount();
+      if (cnt > 0 && cnt % 3 === 0) {
+        setTimeout(()=> toast(
+          "📤 Ти пройшов уже " + cnt + " модулів! Не забудь здати роботу викладачу — натисни «Здати роботу» на панелі ліворуч.",
+          "t-warn"
+        ), 800);
+      }
     });
     right.appendChild(doneBtn);
     if(next){ const b=elc("a","btn ghost",("Модуль "+next.num)+" →"); b.href=`#/${next.id}`; right.appendChild(b); }
