@@ -383,6 +383,19 @@ a.link-card .card-more { color:var(--blue); word-break:break-all; }
   font-size:.82rem; font-weight:800; color:var(--blue); pointer-events:none; }
 .prog-ring-wrap .progress-label { font-size:.64rem; color:var(--muted); text-align:center; }
 
+/* ---- Лайтбокс для ілюстрацій ---- */
+.lb-back { position:fixed; inset:0; z-index:300; background:rgba(10,15,26,.88);
+  display:flex; align-items:center; justify-content:center; padding:20px;
+  opacity:0; transition:opacity .2s; cursor:zoom-out; }
+.lb-back.lb-in { opacity:1; }
+.lb-img { max-width:95vw; max-height:88vh; object-fit:contain; border-radius:8px;
+  box-shadow:0 8px 48px rgba(0,0,0,.6); background:#fff; display:block; }
+.lb-close { position:fixed; top:16px; right:20px; background:rgba(255,255,255,.15);
+  border:1px solid rgba(255,255,255,.3); color:#fff; border-radius:50%;
+  width:36px; height:36px; font-size:1rem; cursor:pointer; display:grid; place-items:center; }
+.lb-close:hover { background:rgba(255,255,255,.3); }
+figure.fig img { cursor:zoom-in; }
+
 /* ---- Режим проєктора ---- */
 body.projector { font-size:26px; }
 body.projector .layout { grid-template-columns:1fr; }

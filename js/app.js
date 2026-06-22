@@ -67,7 +67,30 @@
   function showContent(c){
     requestAnimationFrame(()=>requestAnimationFrame(()=>{
       c.style.transition="opacity .18s ease"; c.style.opacity="1";
+      attachLightbox(c);
     }));
+  }
+
+  function attachLightbox(container){
+    container.querySelectorAll("figure.fig img").forEach(img=>{
+      if(img.dataset.lb) return;
+      img.dataset.lb="1"; img.style.cursor="zoom-in";
+      img.addEventListener("click",()=>openLightbox(img.src, img.alt||""));
+    });
+  }
+  function openLightbox(src, alt){
+    const back = document.createElement("div"); back.className="lb-back";
+    const wrap = document.createElement("div"); wrap.className="lb-wrap";
+    const im = document.createElement("img"); im.src=src; im.alt=alt; im.className="lb-img";
+    const cls = document.createElement("button"); cls.className="lb-close"; cls.textContent="✕";
+    wrap.appendChild(im); back.appendChild(wrap); back.appendChild(cls);
+    document.body.appendChild(back);
+    requestAnimationFrame(()=>back.classList.add("lb-in"));
+    function close(){ back.classList.remove("lb-in"); setTimeout(()=>back.remove(),200); }
+    back.addEventListener("click", e=>{ if(e.target===back||e.target===cls) close(); });
+    document.addEventListener("keydown", function esc(e){
+      if(e.key==="Escape"){ close(); document.removeEventListener("keydown",esc); }
+    });
   }
 
   /* ---------- #6 TOAST ---------- */
