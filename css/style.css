@@ -388,7 +388,7 @@ a.link-card .card-more { color:var(--blue); word-break:break-all; }
   display:flex; align-items:center; justify-content:center; padding:20px;
   opacity:0; transition:opacity .2s; cursor:zoom-out; }
 .lb-back.lb-in { opacity:1; }
-.lb-img { max-width:95vw; max-height:88vh; object-fit:contain; border-radius:8px;
+.lb-img { width:90vw; height:auto; max-height:85vh; object-fit:contain; border-radius:8px;
   box-shadow:0 8px 48px rgba(0,0,0,.6); background:#fff; display:block; }
 .lb-close { position:fixed; top:16px; right:20px; background:rgba(255,255,255,.15);
   border:1px solid rgba(255,255,255,.3); color:#fff; border-radius:50%;
