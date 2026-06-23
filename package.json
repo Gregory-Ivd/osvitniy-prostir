@@ -20,6 +20,8 @@
       "electron/**",
       "build/icon.png",
       "index.html",
+      "manifest.json",
+      "sw.js",
       "kabinet-vykladacha.html",
       "zayava.html",
       "prezentatsiya.html",
@@ -30,7 +32,8 @@
       "brand/**",
       "certificate/**",
       "handouts/**",
-      "instructor/**"
+      "instructor/**",
+      "brand/icons/**"
     ],
     "win": {
       "target": "portable",
