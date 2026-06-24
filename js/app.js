@@ -307,7 +307,7 @@
   }
 
   /* ---------- РЕНДЕР БЛОКІВ УРОКУ ---------- */
-  function renderBlock(b){
+  function renderBlock(b, moduleId){
     if(b.type==="html")   return elc("div", null, b.html);
     if(b.type==="callout"){
       const c = elc("div", "callout "+(b.variant||"info"));
@@ -329,6 +329,12 @@
       s.appendChild(elc("div", null, b.html||""));
       return s;
     }
+    if(b.type==="simulator"){
+      const wrap = elc("div","sim-wrap");
+      if(window.Simulators) Simulators.render(wrap, b, moduleId||"");
+      else wrap.appendChild(elc("p","callout warn","Тренажер недоступний у цій версії."));
+      return wrap;
+    }
     return elc("div", null, "");
   }
 
@@ -349,7 +355,7 @@
     }
 
     const lesson = elc("div","lesson");
-    (m.lessons||[]).forEach(b=> lesson.appendChild(renderBlock(b)));
+    (m.lessons||[]).forEach(b=> lesson.appendChild(renderBlock(b, m.id)));
     c.appendChild(lesson);
 
     if(m.quiz && m.quiz.length){

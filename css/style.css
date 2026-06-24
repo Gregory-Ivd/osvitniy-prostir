@@ -396,6 +396,126 @@ a.link-card .card-more { color:var(--blue); word-break:break-all; }
 .lb-close:hover { background:rgba(255,255,255,.3); }
 figure.fig img { cursor:zoom-in; }
 
+/* ================================================================
+   ТРЕНАЖЕРИ-СИМУЛЯТОРИ
+   ================================================================ */
+.sim-wrap { margin:32px 0; }
+
+.sim-card {
+  border:1.5px solid var(--border);
+  border-radius:10px;
+  background:var(--bg-card);
+  overflow:hidden;
+}
+
+.sim-header {
+  padding:20px 24px 14px;
+  border-bottom:1px solid var(--border);
+  background:var(--bg);
+}
+.sim-title { font-size:1.05rem; font-weight:700; margin:0 0 6px; color:var(--blue); }
+.sim-desc  { font-size:.88rem; color:var(--muted); margin:0; line-height:1.5; }
+
+/* --- Email simulator --- */
+.sim-inbox {
+  padding:16px 24px;
+  border-bottom:1px solid var(--border);
+  background:color-mix(in srgb, var(--bg) 60%, transparent);
+}
+.sim-email-meta { display:flex; flex-direction:column; gap:3px; margin-bottom:12px; font-size:.83rem; color:var(--muted); }
+.sim-label { font-weight:600; color:var(--text); margin-right:6px; }
+.sim-email-body { font-size:.9rem; line-height:1.65; color:var(--text); }
+.sim-email-body p { margin:0 0 10px; }
+
+.sim-composer { padding:16px 24px 20px; }
+.sim-composer-title { font-size:.95rem; font-weight:700; margin:0 0 12px; }
+
+.sim-field-wrap { margin-bottom:10px; }
+.sim-field-label { display:block; font-size:.82rem; font-weight:600; color:var(--muted); margin-bottom:4px; }
+
+.sim-inp {
+  display:block; width:100%; box-sizing:border-box;
+  padding:8px 10px; font-size:.9rem;
+  border:1.5px solid var(--border); border-radius:6px;
+  background:var(--bg); color:var(--text);
+  transition:border-color .15s;
+}
+.sim-inp:focus { outline:none; border-color:var(--blue); }
+
+.sim-textarea {
+  display:block; width:100%; box-sizing:border-box;
+  padding:8px 10px; font-size:.9rem; line-height:1.55;
+  border:1.5px solid var(--border); border-radius:6px;
+  background:var(--bg); color:var(--text);
+  resize:vertical; min-height:120px;
+  font-family:inherit;
+  transition:border-color .15s;
+}
+.sim-textarea:focus { outline:none; border-color:var(--blue); }
+.sim-inp:disabled, .sim-textarea:disabled { opacity:.65; cursor:default; }
+
+/* Контрольний список */
+.sim-checklist { display:flex; flex-wrap:wrap; gap:6px 14px; margin:14px 0; }
+.sim-check-row {
+  display:flex; align-items:center; gap:6px;
+  font-size:.82rem; color:var(--muted);
+  padding:4px 8px; border-radius:4px;
+  border:1px solid var(--border);
+  transition:background .15s, color .15s, border-color .15s;
+}
+.sim-check-icon { font-style:normal; font-size:.9rem; width:14px; text-align:center; }
+.sim-check-row.pass { color:var(--green,#2E9E5B); border-color:var(--green,#2E9E5B); background:color-mix(in srgb,var(--green,#2E9E5B) 8%,transparent); }
+.sim-check-row.fail { color:#c0392b; border-color:#e57373; background:color-mix(in srgb,#e57373 10%,transparent); }
+
+/* Кнопки */
+.sim-btn { margin-top:12px; }
+.sim-reset { margin-left:8px; }
+
+/* Результат */
+.sim-result {
+  margin-top:10px; padding:10px 12px;
+  border-radius:6px; font-size:.88rem; font-weight:500;
+  display:none;
+}
+.sim-result:not(:empty) { display:block; }
+.sim-result.success { background:color-mix(in srgb,var(--green,#2E9E5B) 10%,transparent); color:var(--green,#2E9E5B); border:1px solid var(--green,#2E9E5B); }
+.sim-result.warn    { background:color-mix(in srgb,#f39200 10%,transparent); color:#b36200; border:1px solid #f39200; }
+
+/* --- File manager simulator --- */
+.sim-fm-area { padding:16px 24px 0; display:flex; flex-direction:column; gap:14px; }
+
+.sim-fm-src {
+  border:1.5px dashed var(--border); border-radius:8px;
+  padding:12px;
+}
+.sim-fm-box-title { font-size:.8rem; font-weight:700; color:var(--muted); margin-bottom:8px; letter-spacing:.03em; text-transform:uppercase; }
+
+.sim-fm-file {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:5px 10px; margin:3px;
+  border:1px solid var(--border); border-radius:5px;
+  font-size:.84rem; cursor:pointer; background:var(--bg);
+  transition:border-color .12s, background .12s;
+  user-select:none;
+}
+.sim-fm-file:hover:not(.placed) { border-color:var(--blue); }
+.sim-fm-file.selected { border-color:var(--blue); background:color-mix(in srgb,var(--blue) 10%,transparent); font-weight:600; }
+.sim-fm-file.placed   { cursor:default; }
+.sim-fm-file.correct  { border-color:var(--green,#2E9E5B); color:var(--green,#2E9E5B); }
+.sim-fm-file.wrong    { border-color:#e57373; color:#c0392b; cursor:pointer; }
+.sim-fm-file.wrong:hover { background:color-mix(in srgb,#e57373 10%,transparent); }
+
+.sim-fm-empty { font-size:.84rem; color:var(--muted); padding:4px 0; }
+
+.sim-fm-targets { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:10px; padding-bottom:16px; }
+.sim-fm-folder {
+  border:1.5px solid var(--border); border-radius:8px;
+  padding:10px 10px 12px; min-height:60px;
+  transition:border-color .12s, background .12s;
+}
+.sim-fm-folder.droppable { border-color:var(--blue); cursor:pointer; }
+.sim-fm-folder.droppable:hover { background:color-mix(in srgb,var(--blue) 6%,transparent); }
+
 /* ---- Режим проєктора ---- */
 body.projector { font-size:26px; }
 body.projector .layout { grid-template-columns:1fr; }

@@ -15,6 +15,7 @@
     modules: {},          // id -> {visited, completed, reflection}
     quiz: {},             // id -> {best, total, attempts, lastScore}
     typing: {},           // lessonId -> {bestCpm, bestAcc, attempts, lastCpm, lastAcc}
+    simulators: {},       // simId -> {done, attempts, doneAt}
     signals: {            // сигнали самостійності (телеметрія)
       hintsUsed: 0,       // скільки разів відкрито підказку
       optionalDone: 0,    // виконані опційні/просунуті задачі
@@ -33,10 +34,11 @@
         const parsed = JSON.parse(raw);
         const b = blank();
         const merged = Object.assign(b, parsed);
-        merged.signals = Object.assign(b.signals, parsed.signals || {});
-        merged.modules  = parsed.modules  || {};
-        merged.quiz     = parsed.quiz     || {};
-        merged.typing   = parsed.typing   || {};
+        merged.signals    = Object.assign(b.signals, parsed.signals || {});
+        merged.modules    = parsed.modules    || {};
+        merged.quiz       = parsed.quiz       || {};
+        merged.typing     = parsed.typing     || {};
+        merged.simulators = parsed.simulators || {};
         return merged;
       }
     } catch (e) { /* ignore */ }
@@ -81,6 +83,13 @@
       return t;
     },
     getTyping(lessonId) { return state.typing[lessonId] || null; },
+
+    setSimulatorDone(simId) {
+      const s = (state.simulators[simId] = state.simulators[simId] || { done:false, attempts:0, doneAt:null });
+      s.attempts += 1; s.done = true; s.doneAt = stamp(); save();
+    },
+    getSimulatorDone(simId) { return state.simulators[simId] || null; },
+    simulatorsDoneCount() { return Object.values(state.simulators).filter(s => s.done).length; },
 
     addHint() { state.signals.hintsUsed += 1; save(); },
     addOptional() { state.signals.optionalDone += 1; save(); },
