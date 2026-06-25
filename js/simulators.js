@@ -604,7 +604,8 @@
 
     let step = wasDone() ? 3 : 1;
     let selectedService = wasDone() ? DIIA_SERVICES[0] : null;
-    let appNum = "ЗВ-" + (Math.floor(Math.random() * 900000) + 100000);
+    function _dh(s){let h=5381;for(let i=0;i<s.length;i++)h=((h*33)+s.charCodeAt(i))>>>0;return h;}
+    let appNum = "ЗВ-" + (100000 + _dh(simId) % 900000);
 
     function renderSteps(active) {
       const old = wrap.querySelector(".diia-steps");
@@ -834,7 +835,7 @@
       if(passed===CHECKS.length){
         resultDiv.className="sim-result success"; resultDiv.textContent="Виконано. Документ відформатовано.";
         doc.contentEditable="false";
-        if(!window._demo&&window.Progress&&Progress.setSimulatorDone) Progress.setSimulatorDone(simId);
+        if(!window._demo&&window.Progress&&Progress.setSimulatorDone&&!isDone()) Progress.setSimulatorDone(simId);
       } else {resultDiv.className="sim-result";resultDiv.textContent="";}
     }
     if(isDone()) checkProgress();
@@ -932,6 +933,11 @@
     const resultDiv=el("div","sim-result"); resultDiv.style.marginTop="10px";
     if(done){resultDiv.className="sim-result success";resultDiv.textContent="Виконано. Формула =SUM(B2:B6) введена правильно.";}
     container.appendChild(resultDiv);
+    if(done&&!container.querySelector(".gsheets-bonus")){
+      const bonusDiv=el("div","sim-result success gsheets-bonus"); bonusDiv.style.marginTop="6px";
+      bonusDiv.textContent="Бонус! =MAX(B2:B6) = 3 500 грн (найбільша стаття — оренда).";
+      container.appendChild(bonusDiv);
+    }
 
     function applyFml(inp,key,row){
       const raw=inp.value.trim();
@@ -1273,7 +1279,7 @@
       if(passed===CHECKS.length){
         resultDiv.className="sim-result success"; resultDiv.textContent="Виконано. Ваша перша веб-сторінка містить усі три елементи!";
         textarea.disabled=true;
-        if(!window._demo&&window.Progress&&Progress.setSimulatorDone) Progress.setSimulatorDone(simId);
+        if(!window._demo&&window.Progress&&Progress.setSimulatorDone&&!isDone()) Progress.setSimulatorDone(simId);
       } else {resultDiv.className="sim-result";resultDiv.textContent="";}
     }
 
@@ -1285,33 +1291,45 @@
   /*  PC BUILDER SIMULATOR (M1 — Архітектура та історія цифрових пристроїв) */
   /* ------------------------------------------------------------------ */
   const PC_PARTS = [
-    { id:"cpu",    icon:"🔲", name:"Процесор (CPU)",          slot:"cpu-socket",
-      desc:"Мозок комп'ютера. Виконує мільярди обчислень за секунду.",
-      placed:"✅ CPU у сокеті! Він виконує всі команди й керує рештою компонентів." },
-    { id:"cooler", icon:"🌬", name:"Кулер процесора",          slot:"cpu-cooler",
+    { id:"cpu",      icon:"🔲", name:"Процесор (CPU)",             group:"int", slot:"cpu-socket",
+      desc:"Мозок комп'ютера — виконує мільярди операцій за секунду.",
+      placed:"✅ CPU встановлено! Він виконує всі команди й керує рештою." },
+    { id:"cooler",   icon:"🌬️", name:"Кулер процесора",             group:"int", slot:"cpu-cooler",
       desc:"Охолоджує CPU. Без кулера процесор перегрівається за секунди.",
-      placed:"✅ Кулер встановлено! Тримає температуру CPU у межах 30–80 °C." },
-    { id:"ram",    icon:"📏", name:"Оперативна пам'ять (RAM)", slot:"ram-slots",
-      desc:"Тимчасова пам'ять. Програми живуть тут поки відкриті. Вимкнув — зникло.",
-      placed:"✅ RAM у DIMM-слотах! Саме тут зберігаються відкриті програми та дані." },
-    { id:"ssd",    icon:"💾", name:"SSD-накопичувач (M.2)",    slot:"m2-slot",
-      desc:"Постійна пам'ять. Зберігає ОС і файли навіть без живлення.",
-      placed:"✅ SSD підключено! Windows стартуватиме за 10–15 с замість хвилини з HDD." },
-    { id:"gpu",    icon:"🖥️", name:"Відеокарта (GPU)",          slot:"pcie-slot",
-      desc:"Обробляє зображення. Ігри та відео потребують окремої GPU. Базові ПК обходяться вбудованою в CPU.",
-      placed:"✅ GPU у слоті PCIe x16! Це найдовший слот на платі — спеціально для відеокарт." },
-    { id:"psu",    icon:"⚡", name:"Блок живлення (PSU)",       slot:"psu-bay",
-      desc:"Перетворює 220 В у +12 В, +5 В, +3.3 В для кожного компонента.",
+      placed:"✅ Кулер на місці! Утримує температуру CPU у межах 30–80 °C." },
+    { id:"ram",      icon:"📏", name:"Оперативна пам'ять (RAM)",    group:"int", slot:"ram-slots",
+      desc:"Тимчасова пам'ять: тут живуть запущені програми. Вимкнув — зникло.",
+      placed:"✅ RAM у DIMM-слотах! Відкриті вкладки браузера займають саме її." },
+    { id:"ssd",      icon:"💾", name:"SSD M.2 накопичувач",         group:"int", slot:"m2-slot",
+      desc:"Постійна пам'ять: ОС, програми, файли — зберігаються без живлення.",
+      placed:"✅ SSD підключено! Windows завантажиться за 10–15 с замість хвилини." },
+    { id:"gpu",      icon:"🎮", name:"Відеокарта (GPU)",             group:"int", slot:"pcie-slot",
+      desc:"Обробляє зображення для монітора. Потрібна для ігор, відео, 3D.",
+      placed:"✅ GPU у PCIe x16! Найдовший слот плати — саме для відеокарт." },
+    { id:"psu",      icon:"⚡", name:"Блок живлення (PSU)",          group:"int", slot:"psu-bay",
+      desc:"Перетворює 220 В у +12/5/3.3 В для кожного компонента.",
       placed:"✅ PSU у відсіку! Без нього жоден компонент не отримає живлення." },
+    { id:"monitor",  icon:"🖥️", name:"Монітор (пристрій виводу)",   group:"io",  slot:"monitor-port",
+      desc:"Пристрій ВИВОДУ — показує зображення, підготоване GPU.",
+      placed:"✅ Монітор підключено! Тепер є екран. Пристрій виводу на місці." },
+    { id:"keyboard", icon:"⌨️", name:"Клавіатура (пристрій вводу)", group:"io",  slot:"usb-kb",
+      desc:"Пристрій ВВОДУ — ти вводиш текст і команди через USB.",
+      placed:"✅ Клавіатура в USB! Пристрій вводу підключено." },
+    { id:"mouse",    icon:"🖱️", name:"Миша (пристрій вводу)",        group:"io",  slot:"usb-ms",
+      desc:"Пристрій ВВОДУ — керує курсором, передає кліки та рухи в CPU.",
+      placed:"✅ Миша в USB! Разом з клавіатурою — повний комплект вводу." },
   ];
 
   const PC_SLOT_DEFS = [
-    { id:"cpu-socket", label:"CPU Socket",    accepts:"cpu",    size:"sq"   },
-    { id:"cpu-cooler", label:"Кулер CPU",     accepts:"cooler", size:"sq"   },
-    { id:"ram-slots",  label:"DIMM (RAM ×2)", accepts:"ram",    size:"tall" },
-    { id:"m2-slot",    label:"M.2 SSD",       accepts:"ssd",    size:"bar"  },
-    { id:"pcie-slot",  label:"PCIe x16",      accepts:"gpu",    size:"wide" },
-    { id:"psu-bay",    label:"PSU відсік",    accepts:"psu",    size:"wide" },
+    { id:"cpu-socket",   label:"CPU Socket",     accepts:"cpu",      zone:"mb",  size:"sq"      },
+    { id:"cpu-cooler",   label:"Кулер CPU",      accepts:"cooler",   zone:"mb",  size:"sq"      },
+    { id:"ram-slots",    label:"DIMM (RAM×2)",   accepts:"ram",      zone:"mb",  size:"tall"    },
+    { id:"m2-slot",      label:"M.2 SSD",        accepts:"ssd",      zone:"mb",  size:"bar"     },
+    { id:"pcie-slot",    label:"PCIe x16 GPU",   accepts:"gpu",      zone:"mb",  size:"wide"    },
+    { id:"psu-bay",      label:"PSU відсік",     accepts:"psu",      zone:"psu", size:"wide"    },
+    { id:"monitor-port", label:"Відеовихід",     accepts:"monitor",  zone:"io",  size:"monitor" },
+    { id:"usb-kb",       label:"USB клав.",      accepts:"keyboard", zone:"io",  size:"io"      },
+    { id:"usb-ms",       label:"USB миша",       accepts:"mouse",    zone:"io",  size:"io"      },
   ];
 
   function PCBuilder(container, block, moduleId){
@@ -1319,116 +1337,190 @@
     const isDone=()=>!!(window.Progress&&Progress.getSimulatorDone&&Progress.getSimulatorDone(simId)&&Progress.getSimulatorDone(simId).done);
 
     container.innerHTML="";
-    const simHdr=el("div","sim-header");
-    simHdr.appendChild(el("h2","sim-title","🖥️ Зібери комп'ютер: встанови компоненти"));
-    simHdr.appendChild(el("p","sim-desc","Клацніть на компонент зліва — з'явиться підсвічений слот праворуч. Клацніть на нього, щоб встановити. Зберіть усі 6 компонентів."));
-    container.appendChild(simHdr);
-
     const done=isDone();
     const placed={};
     if(done) PC_PARTS.forEach(p=>{placed[p.id]=true;});
     let selected=null;
+    let dragId=null, ghostEl=null;
+    const partCards={}, slotEls={};
 
-    const layout=el("div","pcb-layout");
-    const tray=el("div","pcb-tray");
-    const caseEl=el("div","pcb-case");
+    const simHdr=el("div","sim-header");
+    simHdr.appendChild(el("h2","sim-title","🖥️ Зібери комп'ютер: встанови компоненти"));
+    simHdr.appendChild(el("p","sim-desc","Перетягни або клацни компонент — потім встанови у правильний слот. 6 внутрішніх компонентів + 3 периферійних пристрої введення/виведення."));
+    container.appendChild(simHdr);
 
-    // --- Tray (left) ---
-    tray.appendChild(el("div","pcb-tray-title","🔧 Компоненти"));
-    const partCards={};
-    PC_PARTS.forEach(p=>{
-      const card=el("div","pcb-part-card"+(placed[p.id]?" placed":""));
-      card.appendChild(el("span","pcb-part-icon",p.icon));
-      const info=el("div","pcb-part-info");
-      info.appendChild(el("div","pcb-part-name",p.name));
-      info.appendChild(el("div","pcb-part-desc",p.desc));
-      card.appendChild(info); partCards[p.id]=card; tray.appendChild(card);
-      if(!done) card.addEventListener("click",()=>{
-        if(placed[p.id]) return;
-        selected=(selected===p.id)?null:p.id;
-        renderSel();
+    // ── SHELF ───────────────────────────────────────────────────────────
+    const shelf=el("div","pcb-shelf");
+    ["int","io"].forEach(grp=>{
+      const grpDiv=el("div","pcb-shelf-group");
+      grpDiv.appendChild(el("div","pcb-shelf-lbl",
+        grp==="int"?"⚙️ Внутрішні компоненти":"🔌 Периферія (введення / виведення)"));
+      const row=el("div","pcb-shelf-row");
+      PC_PARTS.filter(p=>p.group===grp).forEach(p=>{
+        const card=el("div","pcb-part-card"+(placed[p.id]?" placed":""));
+        card.dataset.pid=p.id; card.title=p.desc;
+        card.appendChild(el("span","pcb-part-icon",p.icon));
+        card.appendChild(el("span","pcb-part-name",p.name));
+        partCards[p.id]=card; row.appendChild(card);
+        if(!done) attachDrag(card,p);
       });
+      grpDiv.appendChild(row); shelf.appendChild(grpDiv);
     });
+    container.appendChild(shelf);
 
-    // --- Case (right) ---
-    caseEl.appendChild(el("div","pcb-case-title","💻 Корпус ПК"));
-    const mb=el("div","pcb-motherboard");
-    mb.appendChild(el("div","pcb-mb-label","МАТЕРИНСЬКА ПЛАТА"));
-    const mbGrid=el("div","pcb-mb-grid");
-    const slotEls={};
+    // ── WORKSPACE ────────────────────────────────────────────────────────
+    const workspace=el("div","pcb-workspace");
 
-    PC_SLOT_DEFS.forEach(sd=>{
-      const p=PC_PARTS.find(x=>x.id===sd.accepts);
-      const cls="pcb-slot pcb-slot--"+sd.size+(placed[sd.accepts]?" filled":"");
-      const s=el("div",cls);
-      s.dataset.slotId=sd.id;
-      if(placed[sd.accepts]){
-        s.appendChild(el("span","pcb-slot-icon",p.icon));
-        s.appendChild(el("span","pcb-slot-label",sd.label));
-      } else {
-        s.appendChild(el("span","pcb-slot-empty-label",sd.label));
-      }
-      if(!done) s.addEventListener("click",()=>handleSlotClick(sd,s));
-      slotEls[sd.id]=s;
-      if(sd.id!=="psu-bay") mbGrid.appendChild(s);
-    });
-    mb.appendChild(mbGrid); caseEl.appendChild(mb);
+    // Left: system unit
+    const sysUnit=el("div","pcb-sysunit");
+    sysUnit.appendChild(el("div","pcb-zone-lbl","💻 Системний блок"));
+    const mobo=el("div","pcb-mobo");
+    mobo.appendChild(el("div","pcb-mobo-lbl","МАТЕРИНСЬКА ПЛАТА"));
+    const moboGrid=el("div","pcb-mobo-grid");
+    PC_SLOT_DEFS.filter(s=>s.zone==="mb").forEach(sd=>moboGrid.appendChild(makeSlot(sd)));
+    mobo.appendChild(moboGrid); sysUnit.appendChild(mobo);
+    const psuZone=el("div","pcb-psu-zone");
+    psuZone.appendChild(makeSlot(PC_SLOT_DEFS.find(s=>s.id==="psu-bay")));
+    sysUnit.appendChild(psuZone);
+    workspace.appendChild(sysUnit);
 
-    const psuSec=el("div","pcb-psu-section");
-    psuSec.appendChild(slotEls["psu-bay"]); caseEl.appendChild(psuSec);
-
-    layout.appendChild(tray); layout.appendChild(caseEl);
-    container.appendChild(layout);
+    // Right: desk
+    const desk=el("div","pcb-desk");
+    desk.appendChild(el("div","pcb-zone-lbl","🖥️ Робоче місце"));
+    desk.appendChild(makeSlot(PC_SLOT_DEFS.find(s=>s.id==="monitor-port")));
+    desk.appendChild(el("div","pcb-usb-lbl","⎡ USB-порти ⎤"));
+    const usbRow=el("div","pcb-usb-row");
+    usbRow.appendChild(makeSlot(PC_SLOT_DEFS.find(s=>s.id==="usb-kb")));
+    usbRow.appendChild(makeSlot(PC_SLOT_DEFS.find(s=>s.id==="usb-ms")));
+    desk.appendChild(usbRow);
+    workspace.appendChild(desk);
+    container.appendChild(workspace);
 
     const infoBox=el("div","pcb-info-box");
-    if(done){infoBox.className="pcb-info-box success";infoBox.textContent="Потік даних: CPU ↔ RAM (миттєво) ↔ SSD (повільніше) — GPU отримує команди від CPU — PSU живить усіх.";}
+    if(done){infoBox.className="pcb-info-box success";infoBox.textContent="✅ Зібрано! CPU↔RAM (миттєво)↔SSD (постійно). GPU — картинка на монітор. PSU живить усе. Клавіатура і миша — пристрої вводу.";}
     container.appendChild(infoBox);
 
     const resultDiv=el("div","sim-result");
-    if(done){resultDiv.className="sim-result success";resultDiv.textContent="Виконано. Усі компоненти встановлені правильно.";}
+    if(done){resultDiv.className="sim-result success";resultDiv.textContent="Виконано. Усі 9 компонентів встановлені правильно.";}
     container.appendChild(resultDiv);
 
-    function handleSlotClick(sd,sEl){
+    // ── SLOT FACTORY ─────────────────────────────────────────────────────
+    function makeSlot(sd){
+      const p=PC_PARTS.find(x=>x.id===sd.accepts);
+      const s=el("div","pcb-slot pcb-slot--"+sd.size+(placed[sd.accepts]?" filled":""));
+      s.dataset.sid=sd.id;
+      s.innerHTML=placed[sd.accepts]
+        ?`<span class="pcb-si">${p.icon}</span><span class="pcb-sn">${p.name}</span>`
+        :`<span class="pcb-sl">${sd.label}</span>`;
+      slotEls[sd.id]=s;
+      if(!done) s.addEventListener("click",()=>handleSlotClick(sd));
+      return s;
+    }
+
+    // ── DRAG (Pointer Events — mouse + touch) ────────────────────────────
+    function attachDrag(card,p){
+      let ox=0,oy=0;
+      card.style.touchAction="none";
+      card.addEventListener("pointerdown",e=>{
+        if(placed[p.id]) return;
+        e.preventDefault(); ox=e.clientX; oy=e.clientY;
+        try{card.setPointerCapture(e.pointerId);}catch(_){}
+        dragId=p.id;
+        ghostEl=document.createElement("div");
+        ghostEl.className="pcb-ghost";
+        ghostEl.textContent=p.icon+" "+p.name;
+        document.body.appendChild(ghostEl);
+        posGhost(e.clientX,e.clientY);
+        card.classList.add("pcb-dragging");
+      });
+      card.addEventListener("pointermove",e=>{
+        if(dragId!==p.id) return;
+        posGhost(e.clientX,e.clientY);
+        const sid=slotAt(e.clientX,e.clientY);
+        Object.values(slotEls).forEach(s=>s.classList.remove("pcb-hover"));
+        if(sid&&!placed[PC_SLOT_DEFS.find(x=>x.id===sid).accepts])
+          slotEls[sid].classList.add("pcb-hover");
+      });
+      card.addEventListener("pointerup",e=>{
+        if(dragId!==p.id) return;
+        dragClean(p.id);
+        const dx=Math.abs(e.clientX-ox),dy=Math.abs(e.clientY-oy);
+        if(dx<8&&dy<8){ selected=(selected===p.id)?null:p.id; renderSel(); }
+        else { const sid=slotAt(e.clientX,e.clientY); if(sid) doPlace(p.id,sid); }
+        dragId=null;
+      });
+      card.addEventListener("pointercancel",e=>{
+        if(dragId===p.id){dragClean(p.id);dragId=null;}
+      });
+    }
+    function posGhost(x,y){
+      if(!ghostEl) return;
+      ghostEl.style.left=(x-70)+"px"; ghostEl.style.top=(y-18)+"px";
+    }
+    function dragClean(pid){
+      if(ghostEl){ghostEl.remove();ghostEl=null;}
+      if(partCards[pid]) partCards[pid].classList.remove("pcb-dragging");
+      Object.values(slotEls).forEach(s=>s.classList.remove("pcb-hover"));
+    }
+    function slotAt(x,y){
+      for(const[sid,s] of Object.entries(slotEls)){
+        const r=s.getBoundingClientRect();
+        if(x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom) return sid;
+      }
+      return null;
+    }
+
+    // ── CLICK ON SLOT ────────────────────────────────────────────────────
+    function handleSlotClick(sd){
       if(!selected) return;
-      const selPart=PC_PARTS.find(x=>x.id===selected);
-      if(sd.accepts===selected){
-        // правильно
-        placed[selected]=true;
-        sEl.className="pcb-slot pcb-slot--"+sd.size+" filled flash-ok";
-        sEl.innerHTML="";
-        sEl.appendChild(el("span","pcb-slot-icon",selPart.icon));
-        sEl.appendChild(el("span","pcb-slot-label",sd.label));
-        partCards[selected].classList.add("placed");
-        infoBox.className="pcb-info-box success"; infoBox.textContent=selPart.placed;
-        setTimeout(()=>sEl.classList.remove("flash-ok"),700);
-        selected=null; renderSel(); checkAllDone();
+      doPlace(selected,sd.id);
+    }
+
+    // ── PLACE ────────────────────────────────────────────────────────────
+    function doPlace(pid,slotId){
+      const sd=PC_SLOT_DEFS.find(s=>s.id===slotId);
+      const p=PC_PARTS.find(x=>x.id===pid);
+      if(sd.accepts===pid){
+        placed[pid]=true;
+        const s=slotEls[slotId];
+        s.className="pcb-slot pcb-slot--"+sd.size+" filled flash-ok";
+        s.innerHTML=`<span class="pcb-si">${p.icon}</span><span class="pcb-sn">${p.name}</span>`;
+        partCards[pid].classList.add("placed");
+        infoBox.className="pcb-info-box success"; infoBox.textContent=p.placed;
+        setTimeout(()=>s.classList.remove("flash-ok"),700);
+        selected=null; renderSel(); checkAll();
       } else {
-        // помилково
-        sEl.classList.add("flash-err");
-        setTimeout(()=>sEl.classList.remove("flash-err"),600);
-        const correct=PC_SLOT_DEFS.find(x=>x.accepts===selected);
+        const s=slotEls[slotId];
+        s.classList.add("flash-err");
+        setTimeout(()=>s.classList.remove("flash-err"),600);
+        const correct=PC_SLOT_DEFS.find(x=>x.accepts===pid);
         infoBox.className="pcb-info-box warn";
-        infoBox.textContent=`«${selPart.name}» встановлюється у «${correct.label}», а не сюди. Спробуй ще раз.`;
+        infoBox.textContent=`«${p.name}» → слот «${correct.label}». Не той слот — спробуй ще раз!`;
       }
     }
 
+    // ── SELECTION RENDER ─────────────────────────────────────────────────
     function renderSel(){
-      PC_PARTS.forEach(p=>partCards[p.id].classList.toggle("selected",selected===p.id));
+      PC_PARTS.forEach(p=>{
+        if(partCards[p.id]) partCards[p.id].classList.toggle("selected",selected===p.id);
+      });
       PC_SLOT_DEFS.forEach(sd=>{
-        slotEls[sd.id].classList.toggle("highlight",!!selected&&sd.accepts===selected&&!placed[sd.accepts]);
+        if(slotEls[sd.id]) slotEls[sd.id].classList.toggle("highlight",!!selected&&sd.accepts===selected&&!placed[sd.accepts]);
       });
       if(selected){
         const p=PC_PARTS.find(x=>x.id===selected);
-        infoBox.className="pcb-info-box"; infoBox.textContent="Обрано: «"+p.name+"». Клацни на підсвічений слот у корпусі.";
+        infoBox.className="pcb-info-box";
+        infoBox.textContent=`${p.icon} ${p.name} — ${p.desc} Клацни підсвічений слот!`;
       }
     }
 
-    function checkAllDone(){
+    // ── ALL DONE ─────────────────────────────────────────────────────────
+    function checkAll(){
       if(Object.keys(placed).length===PC_PARTS.length){
         resultDiv.className="sim-result success";
-        resultDiv.textContent="Виконано! Усі компоненти на місці. Комп'ютер готовий до роботи!";
+        resultDiv.textContent="Виконано! Усі 9 компонентів на місці. Комп'ютер готовий!";
         infoBox.className="pcb-info-box success";
-        infoBox.textContent="Потік даних: CPU ↔ RAM (миттєво) ↔ SSD (повільніше) — GPU отримує команди від CPU — PSU живить усіх.";
+        infoBox.textContent="✅ Зібрано! CPU↔RAM (миттєво)↔SSD (постійно). GPU — картинка на монітор. PSU живить усе. Клавіатура і миша — пристрої вводу.";
         if(!window._demo&&window.Progress&&Progress.setSimulatorDone) Progress.setSimulatorDone(simId);
       }
     }
