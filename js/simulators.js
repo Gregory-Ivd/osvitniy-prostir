@@ -577,12 +577,704 @@
   }
 
   /* ------------------------------------------------------------------ */
+  /*  DIIA FORM SIMULATOR (M4 — Дія та електронні послуги)              */
+  /* ------------------------------------------------------------------ */
+  const DIIA_SERVICES = [
+    { id:"id-card", icon:"🪪", title:"Заміна ID-картки",
+      desc:"Замінити паспорт у вигляді книжечки на сучасну ID-картку", time:"⏱ Термін: 20 хвилин",
+      extraLabel:"Серія та номер старого паспорта", extraPlaceholder:"АА 123456" },
+    { id:"residence", icon:"🏠", title:"Реєстрація місця проживання",
+      desc:"Зареєструватися за адресою після переїзду", time:"⏱ Термін: 1 робочий день",
+      extraLabel:"Нова адреса реєстрації", extraPlaceholder:"м. Житомир, вул. Перемоги, 14" },
+    { id:"fop", icon:"💼", title:"Реєстрація ФОП",
+      desc:"Стати фізичною особою-підприємцем для легальної роботи на себе", time:"⏱ Термін: 1 робочий день",
+      extraLabel:"Вид діяльності (КВЕД)", extraPlaceholder:"62.01 — Комп'ютерне програмування" },
+  ];
+
+  function DiiaForm(container, block, moduleId) {
+    const simId = block.id;
+    const wasDone = () => !!(window.Progress && Progress.getSimulatorDone && Progress.getSimulatorDone(simId) && Progress.getSimulatorDone(simId).done);
+
+    container.innerHTML = "";
+    const wrap = el("div", "sim-card");
+
+    const hdr = el("div", "diia-header");
+    hdr.innerHTML = `<div class="diia-logo"><span class="diia-trident">✶</span><span class="diia-wordmark">ДІЯ</span></div><div class="diia-header-sub">Портал державних послуг · diia.gov.ua</div>`;
+    wrap.appendChild(hdr);
+
+    let step = wasDone() ? 3 : 1;
+    let selectedService = wasDone() ? DIIA_SERVICES[0] : null;
+    let appNum = "ЗВ-" + (Math.floor(Math.random() * 900000) + 100000);
+
+    function renderSteps(active) {
+      const old = wrap.querySelector(".diia-steps");
+      if (old) old.remove();
+      const div = el("div", "diia-steps");
+      [["Вибір послуги",1],["Заповнення",2],["Підтвердження",3]].forEach(([label,n],i) => {
+        const s = el("div","diia-step "+(n<active?"done":n===active?"active":""));
+        s.appendChild(el("div","diia-step-num",n<active?"✓":String(n)));
+        s.appendChild(el("div","diia-step-label",label));
+        div.appendChild(s);
+        if (i<2) div.appendChild(el("div","diia-step-connector"));
+      });
+      const cont = wrap.querySelector(".diia-content");
+      if (cont) wrap.insertBefore(div,cont); else wrap.appendChild(div);
+    }
+
+    function renderContent() {
+      const old = wrap.querySelector(".diia-content");
+      if (old) old.remove();
+      const cont = el("div","diia-content");
+
+      if (step===1) {
+        cont.appendChild(el("div","diia-section-title","Оберіть послугу"));
+        const grid = el("div","diia-service-grid");
+        let nextBtn;
+        DIIA_SERVICES.forEach(svc => {
+          const card = el("div","diia-service-card"+(selectedService&&selectedService.id===svc.id?" selected":""));
+          card.innerHTML = `<div class="diia-svc-icon">${svc.icon}</div><div class="diia-svc-title">${svc.title}</div><div class="diia-svc-desc">${svc.desc}</div><div class="diia-svc-time">${svc.time}</div>`;
+          card.addEventListener("click",()=>{
+            selectedService=svc;
+            grid.querySelectorAll(".diia-service-card").forEach(c=>c.classList.remove("selected"));
+            card.classList.add("selected");
+            if(nextBtn) nextBtn.disabled=false;
+          });
+          grid.appendChild(card);
+        });
+        cont.appendChild(grid);
+        const row=el("div","diia-btn-row");
+        nextBtn=el("button","diia-next-btn"); nextBtn.textContent="Далі →"; nextBtn.disabled=!selectedService;
+        nextBtn.addEventListener("click",()=>{step=2;render();});
+        row.appendChild(nextBtn); cont.appendChild(row);
+
+      } else if (step===2) {
+        cont.appendChild(el("div","diia-section-title",selectedService?selectedService.title:"Заповнення форми"));
+        const form=el("div","diia-form");
+        const fields=[
+          {label:"Прізвище, ім'я, по батькові",placeholder:"Іванов Іван Іванович",id:"pib"},
+          {label:"Дата народження",placeholder:"01.01.1990",id:"dob"},
+          {label:"РНОКПП (ідентифікаційний код)",placeholder:"1234567890",id:"rno"},
+        ];
+        if(selectedService) fields.push({label:selectedService.extraLabel,placeholder:selectedService.extraPlaceholder,id:"extra"});
+        const inputs={};
+        fields.forEach(f=>{
+          const g=el("div","diia-field-group");
+          g.appendChild(el("div","diia-field-label",f.label));
+          const inp=el("input","diia-input"); inp.type="text"; inp.placeholder=f.placeholder; inp.autocomplete="off";
+          g.appendChild(inp); form.appendChild(g); inputs[f.id]=inp;
+        });
+        cont.appendChild(form);
+        const err=el("div","diia-err"); err.textContent="Будь ласка, заповніть усі поля."; cont.appendChild(err);
+        const row=el("div","diia-btn-row");
+        const back=el("button","diia-back-btn"); back.textContent="← Назад";
+        back.addEventListener("click",()=>{step=1;render();});
+        const submit=el("button","diia-next-btn"); submit.textContent="Подати заяву";
+        submit.addEventListener("click",()=>{
+          if(!Object.values(inputs).every(i=>i.value.trim().length>0)){err.classList.add("show");return;}
+          err.classList.remove("show"); step=3;
+          if(!window._demo&&window.Progress&&Progress.setSimulatorDone) Progress.setSimulatorDone(simId);
+          render();
+        });
+        row.appendChild(back); row.appendChild(submit); cont.appendChild(row);
+
+      } else {
+        const svc=selectedService||DIIA_SERVICES[0];
+        cont.innerHTML=`<div class="diia-success">
+          <div class="diia-success-icon">✅</div>
+          <div class="diia-success-title">Заяву прийнято!</div>
+          <div class="diia-success-appnum">Номер заяви: <strong>${appNum}</strong></div>
+          <div class="diia-success-desc">Послуга: <strong>${svc.title}</strong><br>Ви отримаєте повідомлення про готовність у застосунку «Дія».</div>
+          <div class="diia-status-track">
+            <div class="diia-track-item done">✅ Прийнято</div>
+            <div class="diia-track-item current">⏳ В обробці</div>
+            <div class="diia-track-item">— Готово до отримання</div>
+          </div>
+          <div style="margin-top:16px"><button class="diia-next-btn diia-try-again">Спробувати іншу послугу</button></div>
+        </div>`;
+        cont.querySelector(".diia-try-again").addEventListener("click",()=>{step=1;selectedService=null;render();});
+      }
+      wrap.appendChild(cont);
+    }
+
+    function render(){renderSteps(step);renderContent();}
+    render();
+    container.appendChild(wrap);
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  DOCS EDITOR SIMULATOR (M5 — Документи й таблиці, part 1)          */
+  /* ------------------------------------------------------------------ */
+  const DOCS_INITIAL_HTML = `<p>ЗАЯВА</p>
+<p>Начальнику ДУ «Житомирська УВП №8»<br>Квасному А.В.</p>
+<p>від [ваше ім'я та прізвище]</p>
+<p>Прошу надати дозвіл на навчання в рамках пілотного проекту «Освітній простір».</p>
+<p>Підстави:</p>
+<p>Бажання отримати цифрові навички</p>
+<p>Мета — підвищення шансів на працевлаштування</p>
+<p>Готовність дотримуватись вимог навчального процесу</p>
+<p>Дата: ___.____.2026</p>
+<p>Підпис: ___________</p>`;
+
+  const DOCS_DONE_HTML = `<h1>ЗАЯВА</h1>
+<p>Начальнику ДУ «Житомирська УВП №8»<br>Квасному А.В.</p>
+<p>від <strong>[ваше ім'я та прізвище]</strong></p>
+<p>Прошу надати дозвіл на навчання в рамках пілотного проекту «Освітній простір».</p>
+<p>Підстави:</p>
+<ul><li>Бажання отримати цифрові навички</li><li>Мета — підвищення шансів на працевлаштування</li><li>Готовність дотримуватись вимог навчального процесу</li></ul>
+<p>Дата: ___.____.2026</p>
+<p>Підпис: ___________</p>`;
+
+  function DocsEditor(container, block, moduleId) {
+    const simId = block.id;
+    const isDone = () => !!(window.Progress && Progress.getSimulatorDone && Progress.getSimulatorDone(simId) && Progress.getSimulatorDone(simId).done);
+
+    container.innerHTML = "";
+    const simHdr = el("div","sim-header");
+    simHdr.appendChild(el("h2","sim-title","📝 Google Документи: відформатуй заяву"));
+    simHdr.appendChild(el("p","sim-desc","Завдання: 1) зроби «ЗАЯВА» заголовком — виділи слово і обери Заголовок 1; 2) виділи жирним своє ім'я; 3) перетвори список підстав на маркований список."));
+    container.appendChild(simHdr);
+
+    const shell = el("div","gdocs-shell");
+
+    const titlebar = el("div","gdocs-titlebar");
+    titlebar.innerHTML = `<span class="gdocs-icon">📄</span><span class="gdocs-filename">Заява.docx</span><span class="gdocs-saved">Збережено на диску</span>`;
+    shell.appendChild(titlebar);
+
+    const menubar = el("div","gdocs-menubar");
+    ["Файл","Правка","Вигляд","Вставити","Формат","Інструменти"].forEach(m=>menubar.appendChild(el("span",null,m)));
+    shell.appendChild(menubar);
+
+    const toolbar = el("div","gdocs-toolbar");
+    const headingSel = el("select","gdocs-heading-sel");
+    [["Звичайний текст","p"],["Заголовок 1","h1"],["Заголовок 2","h2"]].forEach(([lbl,val])=>{
+      const o=document.createElement("option"); o.value=val; o.textContent=lbl; headingSel.appendChild(o);
+    });
+    headingSel.addEventListener("change",()=>{if(!isDone()) document.execCommand("formatBlock",false,headingSel.value);});
+
+    const fontSel = el("select","gdocs-font-sel");
+    ["Arial","Times New Roman","Courier New"].forEach(f=>{
+      const o=document.createElement("option"); o.value=f; o.textContent=f; fontSel.appendChild(o);
+    });
+    const sizeSel = el("select","gdocs-size-sel");
+    ["10","11","12","14","16"].forEach(s=>{
+      const o=document.createElement("option"); o.value=s; o.textContent=s;
+      if(s==="11") o.selected=true; sizeSel.appendChild(o);
+    });
+
+    function mkBtn(html,cmd,val){
+      const b=el("button","gdocs-btn"); b.innerHTML=html;
+      b.addEventListener("mousedown",e=>e.preventDefault());
+      b.addEventListener("click",()=>{if(!isDone()){document.execCommand(cmd,false,val||null);}checkProgress();});
+      return b;
+    }
+    const grp0=el("div","gdocs-tool-group");
+    grp0.appendChild(headingSel); grp0.appendChild(fontSel); grp0.appendChild(sizeSel);
+    const sep=()=>el("div","gdocs-tool-sep");
+    const grp1=el("div","gdocs-tool-group");
+    grp1.appendChild(mkBtn("<b>Ж</b>","bold"));
+    grp1.appendChild(mkBtn("<i>К</i>","italic"));
+    grp1.appendChild(mkBtn("<u>П</u>","underline"));
+    const grp2=el("div","gdocs-tool-group");
+    grp2.appendChild(mkBtn("≡•","insertUnorderedList"));
+    grp2.appendChild(mkBtn("≡1","insertOrderedList"));
+    const grp3=el("div","gdocs-tool-group");
+    grp3.appendChild(mkBtn("⬅","justifyLeft"));
+    grp3.appendChild(mkBtn("↔","justifyFull"));
+    grp3.appendChild(mkBtn("➡","justifyRight"));
+    toolbar.appendChild(grp0); toolbar.appendChild(sep()); toolbar.appendChild(grp1);
+    toolbar.appendChild(sep()); toolbar.appendChild(grp2); toolbar.appendChild(sep()); toolbar.appendChild(grp3);
+    shell.appendChild(toolbar);
+
+    const docWrapper = el("div","gdocs-doc-wrapper");
+    const doc = el("div","gdocs-doc");
+    doc.contentEditable = isDone() ? "false" : "true";
+    doc.spellcheck = false;
+    doc.innerHTML = isDone() ? DOCS_DONE_HTML : DOCS_INITIAL_HTML;
+    doc.addEventListener("input", checkProgress);
+    docWrapper.appendChild(doc); shell.appendChild(docWrapper);
+    container.appendChild(shell);
+
+    const CHECKS=[
+      {key:"heading",label:"Заголовок застосовано (ЗАЯВА → Заголовок 1 або 2)"},
+      {key:"bold",   label:"Жирний текст є"},
+      {key:"list",   label:"Маркований або нумерований список є"},
+    ];
+    const clWrap=el("div","sim-checklist"); clWrap.style.padding="12px 20px 0";
+    const checkNodes={};
+    CHECKS.forEach(c=>{
+      const row=el("div","sim-check-row"+(isDone()?" pass":""));
+      row.innerHTML=`<span class="sim-check-icon">${isDone()?"✓":"○"}</span>${c.label}`;
+      checkNodes[c.key]=row; clWrap.appendChild(row);
+    });
+    container.appendChild(clWrap);
+
+    const resultDiv=el("div","sim-result"); resultDiv.style.margin="8px 20px 16px";
+    if(isDone()){resultDiv.className="sim-result success";resultDiv.textContent="Виконано. Документ відформатовано.";}
+    container.appendChild(resultDiv);
+
+    function checkProgress(){
+      const html=doc.innerHTML;
+      const res={heading:/<h[1-3]/i.test(html),bold:/<strong|<b[> ]/i.test(html),list:/<ul|<ol/i.test(html)};
+      let passed=0;
+      CHECKS.forEach(c=>{
+        const row=checkNodes[c.key];
+        if(res[c.key]){row.className="sim-check-row pass";row.querySelector(".sim-check-icon").textContent="✓";passed++;}
+        else{row.className="sim-check-row";row.querySelector(".sim-check-icon").textContent="○";}
+      });
+      if(passed===CHECKS.length){
+        resultDiv.className="sim-result success"; resultDiv.textContent="Виконано. Документ відформатовано.";
+        doc.contentEditable="false";
+        if(!window._demo&&window.Progress&&Progress.setSimulatorDone) Progress.setSimulatorDone(simId);
+      } else {resultDiv.className="sim-result";resultDiv.textContent="";}
+    }
+    if(isDone()) checkProgress();
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  SHEETS EDITOR SIMULATOR (M5 — Документи й таблиці, part 2)        */
+  /* ------------------------------------------------------------------ */
+  const SHEETS_ROWS = [
+    {a:"Категорія",      b:"Сума (грн)", header:true},
+    {a:"Оренда",         b:"3 500"},
+    {a:"Продукти",       b:"2 800"},
+    {a:"Транспорт",      b:"650"},
+    {a:"Комунальні",     b:"1 200"},
+    {a:"Інше",           b:"400"},
+    {a:"РАЗОМ",          b:"", task:true},
+    {a:"Найбільша стаття",b:"", bonus:true},
+  ];
+
+  function evalSheetFormula(raw){
+    const f=raw.trim().toUpperCase();
+    if(f==="=SUM(B2:B6)") return "8 550";
+    if(f==="=MAX(B2:B6)") return "3 500";
+    if(f.startsWith("=")) return "#ЗНАЧ!";
+    return raw;
+  }
+
+  function SheetsEditor(container, block, moduleId){
+    const simId=block.id;
+    const isDone=()=>!!(window.Progress&&Progress.getSimulatorDone&&Progress.getSimulatorDone(simId)&&Progress.getSimulatorDone(simId).done);
+
+    container.innerHTML="";
+    const simHdr=el("div","sim-header");
+    simHdr.appendChild(el("h2","sim-title","📊 Google Таблиці: формула SUM"));
+    simHdr.appendChild(el("p","sim-desc","Клацніть на комірку B7 (РАЗОМ) і введіть =SUM(B2:B6), натисніть Enter. Бонус: у B8 введіть =MAX(B2:B6)."));
+    container.appendChild(simHdr);
+
+    const shell=el("div","gsheets-shell");
+
+    const fbar=el("div","gsheets-fbar");
+    const cellRef=el("div","gsheets-cell-ref","A1");
+    fbar.appendChild(cellRef);
+    fbar.appendChild(el("div","gsheets-fbar-fx","fx"));
+    const fbarInp=el("input","gsheets-fbar-input"); fbarInp.placeholder="Формула або значення"; fbarInp.readOnly=true;
+    fbar.appendChild(fbarInp);
+    shell.appendChild(fbar);
+
+    const gridWrap=el("div","gsheets-grid-wrap");
+    const table=el("table","gsheets-table");
+    const thead=document.createElement("thead");
+    const hr=document.createElement("tr");
+    hr.appendChild(el("th","gsheets-corner"));
+    ["A","B"].forEach(c=>hr.appendChild(el("th","gsheets-col-header",c)));
+    thead.appendChild(hr); table.appendChild(thead);
+
+    const tbody=document.createElement("tbody");
+    const cellInps={};
+    const done=isDone();
+
+    SHEETS_ROWS.forEach((row,i)=>{
+      const rn=i+1;
+      const tr=document.createElement("tr");
+      tr.appendChild(el("td","gsheets-row-header",String(rn)));
+      const cls=" "+(row.header?"gsheets-header-row":(row.task||row.bonus)?"gsheets-sum-row":"");
+      tr.appendChild(el("td","gsheets-cell"+cls,row.a));
+      const tdB=el("td","gsheets-cell"+cls);
+      const cellKey="B"+rn;
+      if(row.task||row.bonus){
+        const inp=el("input","gsheets-cell-input");
+        inp.readOnly=done;
+        if(done){inp.value=evalSheetFormula(row.task?"=SUM(B2:B6)":"=MAX(B2:B6)");inp.style.color="#333";}
+        inp.placeholder=row.task?"=SUM(B2:B6)":"=MAX(B2:B6)";
+        inp.addEventListener("focus",()=>{
+          tdB.classList.add("gsheets-cell-selected");
+          cellRef.textContent=cellKey; fbarInp.readOnly=false; fbarInp.value=inp.value;
+        });
+        inp.addEventListener("blur",()=>{tdB.classList.remove("gsheets-cell-selected");fbarInp.readOnly=true;});
+        inp.addEventListener("input",()=>{fbarInp.value=inp.value;});
+        inp.addEventListener("keydown",e=>{
+          if(e.key==="Enter"){e.preventDefault();applyFml(inp,cellKey,row);inp.blur();}
+        });
+        tdB.appendChild(inp); cellInps[cellKey]=inp;
+      } else {
+        tdB.textContent=row.b;
+      }
+      tr.appendChild(tdB); tbody.appendChild(tr);
+    });
+    table.appendChild(tbody); gridWrap.appendChild(table); shell.appendChild(gridWrap);
+
+    const tabs=el("div","gsheets-tabs");
+    tabs.innerHTML=`<div class="gsheets-tab active">📄 Лист1</div><div class="gsheets-tab">+</div>`;
+    shell.appendChild(tabs);
+    container.appendChild(shell);
+
+    const resultDiv=el("div","sim-result"); resultDiv.style.marginTop="10px";
+    if(done){resultDiv.className="sim-result success";resultDiv.textContent="Виконано. Формула =SUM(B2:B6) введена правильно.";}
+    container.appendChild(resultDiv);
+
+    function applyFml(inp,key,row){
+      const raw=inp.value.trim();
+      const val=evalSheetFormula(raw);
+      inp.value=val; inp.style.color=val==="#ЗНАЧ!"?"#c0392b":"#333";
+      if(key==="B7"&&raw.toUpperCase()==="=SUM(B2:B6)"){
+        resultDiv.className="sim-result success";
+        resultDiv.textContent="Правильно! =SUM(B2:B6) = 8 550 грн. Загальна сума витрат.";
+        if(!window._demo&&window.Progress&&Progress.setSimulatorDone) Progress.setSimulatorDone(simId);
+      } else if(key==="B8"&&raw.toUpperCase()==="=MAX(B2:B6)"){
+        const bonusDiv=el("div","sim-result success"); bonusDiv.style.marginTop="6px";
+        bonusDiv.textContent="Бонус! =MAX(B2:B6) = 3 500 грн (найбільша стаття — оренда).";
+        resultDiv.parentNode.insertBefore(bonusDiv,resultDiv.nextSibling);
+      }
+    }
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  AI CHAT SIMULATOR (M8 — AI як особистий асистент: промптинг)       */
+  /* ------------------------------------------------------------------ */
+  function scorePromptText(text){
+    const t=text.toLowerCase();
+    return {
+      task:   /напиш|поясн|допоможи|порад|склад|опиш|зроб|підказ|розкаж|переклад|знайд/i.test(t),
+      context:/для|щоб|тому що|бо|мені|моєму|я хочу|мета|після|перед|коли|якщо/i.test(t),
+      format: /список|таблиц|коротко|докладно|пункт|форматі|нумерован|маркован|по кроках|у вигляді|одним реченням|простими словами/i.test(t),
+    };
+  }
+
+  function getAIResponse(text,score){
+    const t=text.toLowerCase();
+    if(!score.task) return "Я не зрозумів, що саме потрібно зробити. Спробуй почати з дієслова: «напиши», «поясни», «допоможи», «знайди»...";
+    if(!score.context) return "Можу відповісти, але контекст допоможе точніше. Уточни: для кого це? Навіщо? В якій ситуації?";
+    if(!score.format) return "Хороше завдання! Але в якому форматі потрібна відповідь — список, таблиця, коротко, по кроках?";
+    if(/резюм/i.test(t)) return "Ось структура резюме для оператора ПК:\n\n1. Контактна інформація\n2. Ціль: посада оператора ПК\n3. Навички: MS Excel, введення даних, уважність\n4. Досвід (конкретно що робив)\n5. Освіта\n\nПорада: збережи у форматі .pdf перед надсиланням.";
+    if(/дія|паспорт|id.картк/i.test(t)) return "Кроки для заміни ID-картки через Дія:\n\n1. Відкрий diia.gov.ua у браузері\n2. Обери «Паспорт → Замовити ID-картку»\n3. Заповни форму: ПІБ, дата народження, РНОКПП\n4. Завантаж фото (якщо потрібно)\n5. Підтверди — термін до 20 хвилин";
+    if(/excel|таблиц|формул|sum/i.test(t)) return "Корисні формули Excel:\n\n=SUM(A1:A10) — сума діапазону\n=AVERAGE(A1:A10) — середнє\n=MAX(A1:A10) — максимум\n=MIN(A1:A10) — мінімум\n\nВведи формулу в комірку і натисни Enter.";
+    if(/html|сайт|веб/i.test(t)) return "Базова HTML-сторінка:\n\n<!DOCTYPE html>\n<html>\n<head><title>Назва</title></head>\n<body>\n  <h1>Заголовок</h1>\n  <p>Абзац</p>\n  <a href=\"...\">Посилання</a>\n</body>\n</html>";
+    return "Зрозумів завдання. Ось відповідь:\n\n• Перший крок: визначте конкретну мету\n• Другий крок: зберіть потрібні дані або ресурси\n• Третій крок: виконайте завдання за планом\n\nЯкщо потрібні деталі — уточни!";
+  }
+
+  function AIChat(container, block, moduleId){
+    const simId=block.id;
+    const isDone=()=>!!(window.Progress&&Progress.getSimulatorDone&&Progress.getSimulatorDone(simId)&&Progress.getSimulatorDone(simId).done);
+
+    container.innerHTML="";
+    const simHdr=el("div","sim-header");
+    simHdr.appendChild(el("h2","sim-title","🤖 ChatGPT: практика промптингу"));
+    simHdr.appendChild(el("p","sim-desc","Напиши промпт за формулою: Завдання + Контекст + Формат. Усі три індикатори мають стати зеленими."));
+    container.appendChild(simHdr);
+
+    const ui=el("div","aichat-ui");
+
+    const sidebar=el("div","aichat-sidebar");
+    sidebar.innerHTML=`<div class="aichat-brand"><span class="aichat-brand-icon">◉</span> ChatGPT</div>
+      <button class="aichat-new-btn">+ Нова розмова</button>
+      <div class="aichat-history">
+        <div class="aichat-hist-label">Сьогодні</div>
+        <div class="aichat-hist-item active">Практика промптингу</div>
+        <div class="aichat-hist-item">Вакансії та резюме</div>
+      </div>
+      <div class="aichat-sidebar-bottom"><div class="aichat-user-row">👤 Учень</div></div>`;
+    ui.appendChild(sidebar);
+
+    const main=el("div","aichat-main");
+    const messages=el("div","aichat-messages");
+
+    function addMsg(role,text){
+      const msg=el("div","aichat-msg "+role);
+      const av=el("div","aichat-avatar",role==="user"?"👤":"◉");
+      if(role==="user") av.style.background="#5b7fff";
+      const bubble=el("div","aichat-bubble"); bubble.style.whiteSpace="pre-wrap"; bubble.textContent=text;
+      msg.appendChild(av); msg.appendChild(bubble); messages.appendChild(msg);
+      messages.scrollTop=messages.scrollHeight;
+    }
+
+    addMsg("assistant","Привіт! Я — тренажер ChatGPT.\n\nПрактикуй формулу промпту:\n\n📌 Завдання + 🔍 Контекст + 📋 Формат\n\nПриклад: «Напиши резюме для оператора ПК без досвіду у вигляді списку.»\n\nСпробуй!");
+    main.appendChild(messages);
+
+    const scoreRow=el("div","aichat-score-row");
+    const scoreItems={};
+    [["task","📌 Завдання"],["context","🔍 Контекст"],["format","📋 Формат"]].forEach(([k,lbl])=>{
+      const item=el("div","aichat-score-item",lbl); scoreItems[k]=item; scoreRow.appendChild(item);
+    });
+    main.appendChild(scoreRow);
+
+    const inputArea=el("div","aichat-input-area");
+    const input=el("textarea","aichat-input"); input.placeholder="Напишіть промпт..."; input.rows=2; input.disabled=isDone();
+    const sendBtn=el("button","aichat-send-btn","↑"); sendBtn.disabled=isDone();
+    inputArea.appendChild(input); inputArea.appendChild(sendBtn);
+    main.appendChild(inputArea);
+    main.appendChild(el("div","aichat-footer","Це навчальний тренажер. Відповіді заздалегідь написані для практики промптингу."));
+    ui.appendChild(main);
+    container.appendChild(ui);
+
+    const resultDiv=el("div","sim-result"); resultDiv.style.marginTop="10px";
+    if(isDone()){resultDiv.className="sim-result success";resultDiv.textContent="Виконано. Ви склали правильний промпт з усіма трьома критеріями.";}
+    container.appendChild(resultDiv);
+
+    input.addEventListener("input",()=>{
+      const s=scorePromptText(input.value);
+      Object.entries(s).forEach(([k,v])=>{scoreItems[k].className="aichat-score-item"+(v?" pass":"");});
+    });
+
+    function send(){
+      const text=input.value.trim(); if(!text) return;
+      addMsg("user",text); input.value="";
+      Object.values(scoreItems).forEach(s=>s.className="aichat-score-item");
+      const score=scorePromptText(text);
+      const typingMsg=el("div","aichat-msg assistant");
+      const tAv=el("div","aichat-avatar","◉");
+      const tBubble=el("div","aichat-bubble aichat-typing");
+      tBubble.innerHTML="<span></span><span></span><span></span>";
+      typingMsg.appendChild(tAv); typingMsg.appendChild(tBubble);
+      messages.appendChild(typingMsg); messages.scrollTop=messages.scrollHeight;
+      setTimeout(()=>{
+        typingMsg.remove();
+        addMsg("assistant",getAIResponse(text,score));
+        if(score.task&&score.context&&score.format){
+          resultDiv.className="sim-result success";
+          resultDiv.textContent="Виконано! Усі три критерії виконані. Чудовий промпт!";
+          input.disabled=true; sendBtn.disabled=true;
+          if(!window._demo&&window.Progress&&Progress.setSimulatorDone) Progress.setSimulatorDone(simId);
+        }
+      },1200);
+    }
+
+    sendBtn.addEventListener("click",send);
+    input.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}});
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  FACT CHECKER SIMULATOR (M9 — Критичне мислення зі ШІ)             */
+  /* ------------------------------------------------------------------ */
+  const FC_STATEMENTS=[
+    {text:"Портал Дія (diia.gov.ua) — офіційний сервіс Міністерства цифрової трансформації України, де доступно понад 70 державних послуг онлайн.",
+     correct:"вірю", explain:"✅ Правда. Дія — офіційний урядовий портал, запущений у 2019 р. Надає понад 70 послуг онлайн."},
+    {text:"ChatGPT може підключатися до бази даних Державного реєстру населення і перевіряти особисті документи громадян у реальному часі.",
+     correct:"перевірити", explain:"❌ Неправда (галюцинація). ChatGPT не має доступу до жодних державних реєстрів. Він генерує текст, а не шукає реальні дані."},
+    {text:"Microsoft Excel — програма для роботи з електронними таблицями, яка входить до пакету Microsoft Office.",
+     correct:"вірю", explain:"✅ Правда. Excel — класична програма для таблиць від Microsoft, частина пакету Office (поруч із Word і PowerPoint)."},
+    {text:"Google Gemini і ChatGPT — це одна й та сама програма, яку спільно розробили Google і OpenAI у 2021 році.",
+     correct:"перевірити", explain:"❌ Неправда. ChatGPT — від OpenAI, Gemini — від Google. Різні компанії-конкуренти, вони не розробляли нічого разом."},
+    {text:"Засуджені в Україні мають право на освіту відповідно до Кримінально-виконавчого кодексу України.",
+     correct:"вірю", explain:"✅ Правда. Стаття 125 КВК України гарантує засудженим право на освіту. Пілотний проєкт «Освітній простір» реалізує саме це право."},
+  ];
+
+  function FactChecker(container, block, moduleId){
+    const simId=block.id;
+    const isDone=()=>!!(window.Progress&&Progress.getSimulatorDone&&Progress.getSimulatorDone(simId)&&Progress.getSimulatorDone(simId).done);
+
+    container.innerHTML="";
+    const simHdr=el("div","sim-header");
+    simHdr.appendChild(el("h2","sim-title","🔍 Перевірка тверджень AI"));
+    simHdr.appendChild(el("p","sim-desc","AI «сказав» 5 речей. Для кожного оберіть: «✓ Вірю» — якщо правда, «⚠ Потрібно перевірити» — якщо схоже на галюцинацію. Правильно мінімум 4 з 5."));
+    container.appendChild(simHdr);
+
+    const answers={};
+    let submitted=false;
+    const stmts=el("div","factcheck-statements");
+    const verdicts={}, btnPairs={};
+
+    FC_STATEMENTS.forEach((s,i)=>{
+      const card=el("div","factcheck-card");
+      const bubble=el("div","factcheck-bubble");
+      const av=el("div","factcheck-ai-avatar","◉");
+      bubble.appendChild(av); bubble.appendChild(el("div","factcheck-text",s.text));
+      card.appendChild(bubble);
+      const btnRow=el("div","factcheck-btn-row");
+      const bB=el("button","factcheck-btn believe","✓ Вірю");
+      const bC=el("button","factcheck-btn check","⚠ Потрібно перевірити");
+      [bB,bC].forEach(btn=>btn.addEventListener("click",()=>{
+        if(submitted||isDone()) return;
+        answers[i]=btn===bB?"вірю":"перевірити";
+        bB.classList.toggle("selected",answers[i]==="вірю");
+        bC.classList.toggle("selected",answers[i]==="перевірити");
+      }));
+      btnRow.appendChild(bB); btnRow.appendChild(bC); card.appendChild(btnRow);
+      const v=el("div","factcheck-verdict"); v.style.display="none"; card.appendChild(v);
+      verdicts[i]=v; btnPairs[i]={bB,bC};
+      stmts.appendChild(card);
+    });
+    container.appendChild(stmts);
+
+    const submitBtn=el("button","btn primary sim-btn"); submitBtn.textContent="Перевірити відповіді"; submitBtn.style.marginTop="14px";
+    const resultDiv=el("div","sim-result"); resultDiv.style.marginTop="10px";
+    container.appendChild(submitBtn); container.appendChild(resultDiv);
+
+    function showAllDone(){
+      FC_STATEMENTS.forEach((s,i)=>{
+        verdicts[i].className="factcheck-verdict correct"; verdicts[i].textContent=s.explain; verdicts[i].style.display="";
+        btnPairs[i].bB.disabled=true; btnPairs[i].bC.disabled=true;
+        btnPairs[i].bB.classList.toggle("selected",s.correct==="вірю");
+        btnPairs[i].bC.classList.toggle("selected",s.correct==="перевірити");
+      });
+      submitBtn.style.display="none";
+      resultDiv.className="sim-result success"; resultDiv.textContent="Виконано. Ви успішно розрізнили правду від галюцинацій AI.";
+    }
+
+    if(isDone()){FC_STATEMENTS.forEach((s,i)=>{answers[i]=s.correct;});showAllDone();return;}
+
+    submitBtn.addEventListener("click",()=>{
+      if(Object.keys(answers).length<FC_STATEMENTS.length){
+        resultDiv.className="sim-result warn"; resultDiv.textContent="Оцініть усі 5 тверджень перед перевіркою."; return;
+      }
+      const correct=FC_STATEMENTS.filter((s,i)=>answers[i]===s.correct).length;
+      FC_STATEMENTS.forEach((s,i)=>{
+        verdicts[i].className="factcheck-verdict "+(answers[i]===s.correct?"correct":"wrong");
+        verdicts[i].textContent=s.explain; verdicts[i].style.display="";
+      });
+      if(correct>=4){
+        submitted=true;
+        Object.values(btnPairs).forEach(p=>{p.bB.disabled=true;p.bC.disabled=true;});
+        submitBtn.style.display="none";
+        resultDiv.className="sim-result success"; resultDiv.textContent=correct+" з 5 правильно. Виконано!";
+        if(!window._demo&&window.Progress&&Progress.setSimulatorDone) Progress.setSimulatorDone(simId);
+      } else {
+        resultDiv.className="sim-result warn";
+        resultDiv.textContent=correct+" з 5 правильно. Потрібно мінімум 4. Перегляньте відмічені та спробуйте ще раз.";
+        submitBtn.textContent="Спробувати ще раз";
+        FC_STATEMENTS.forEach((s,i)=>{
+          if(answers[i]!==s.correct){
+            verdicts[i].style.display="none";
+            btnPairs[i].bB.classList.remove("selected"); btnPairs[i].bC.classList.remove("selected");
+            delete answers[i];
+          }
+        });
+      }
+    });
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  HTML EDITOR SIMULATOR (M11 — Практикум оркестрації)               */
+  /* ------------------------------------------------------------------ */
+  const HTML_STARTER=`<!DOCTYPE html>
+<html>
+<head>
+  <title>Моя перша сторінка</title>
+  <style>body{font-family:Arial,sans-serif;padding:20px;color:#1a1c2e;}</style>
+</head>
+<body>
+
+  <!-- Додайте заголовок <h1> -->
+
+  <!-- Додайте абзац <p> -->
+
+  <!-- Додайте посилання <a href="..."> -->
+
+</body>
+</html>`;
+
+  const HTML_DONE=`<!DOCTYPE html>
+<html>
+<head>
+  <title>Моя перша сторінка</title>
+  <style>body{font-family:Arial,sans-serif;padding:20px;color:#1a1c2e;}</style>
+</head>
+<body>
+
+  <h1>Привіт! Це моя перша веб-сторінка</h1>
+
+  <p>Я навчився створювати сайти на курсі «Освітній простір».</p>
+
+  <a href="https://diia.gov.ua">Перейти на портал Дія</a>
+
+</body>
+</html>`;
+
+  function HTMLEditor(container, block, moduleId){
+    const simId=block.id;
+    const isDone=()=>!!(window.Progress&&Progress.getSimulatorDone&&Progress.getSimulatorDone(simId)&&Progress.getSimulatorDone(simId).done);
+
+    container.innerHTML="";
+    const simHdr=el("div","sim-header");
+    simHdr.appendChild(el("h2","sim-title","💻 HTML-редактор: перша веб-сторінка"));
+    simHdr.appendChild(el("p","sim-desc","Додайте в код: 1) заголовок <h1>…</h1>, 2) абзац <p>…</p>, 3) посилання <a href=\"…\">…</a>. Прев'ю оновлюється одразу. Усі три індикатори мають стати зеленими."));
+    container.appendChild(simHdr);
+
+    const shell=el("div","htmled-shell");
+    const toolbar=el("div","htmled-toolbar");
+    toolbar.innerHTML=`<span class="htmled-filename">📄 index.html</span><span class="htmled-lang-badge">HTML</span>`;
+    shell.appendChild(toolbar);
+
+    const panels=el("div","htmled-panels");
+
+    const edPanel=el("div","htmled-editor-panel");
+    edPanel.appendChild(el("div","htmled-panel-header","EDITOR"));
+    const textarea=el("textarea","htmled-textarea");
+    textarea.value=isDone()?HTML_DONE:HTML_STARTER;
+    textarea.disabled=isDone(); textarea.spellcheck=false;
+    edPanel.appendChild(textarea); panels.appendChild(edPanel);
+
+    const pvPanel=el("div","htmled-preview-panel");
+    pvPanel.appendChild(el("div","htmled-panel-header","PREVIEW"));
+    const browserBar=el("div","htmled-browser-bar");
+    browserBar.innerHTML=`<div class="htmled-browser-dots"><span></span><span></span><span></span></div><div class="htmled-browser-url">мій-сайт.html</div>`;
+    pvPanel.appendChild(browserBar);
+    const iframe=document.createElement("iframe");
+    iframe.className="htmled-iframe"; iframe.sandbox="allow-same-origin"; iframe.srcdoc=textarea.value;
+    pvPanel.appendChild(iframe); panels.appendChild(pvPanel);
+    shell.appendChild(panels);
+    container.appendChild(shell);
+
+    const CHECKS=[
+      {key:"h1",label:"Заголовок <h1> є"},
+      {key:"p", label:"Абзац <p> є"},
+      {key:"a", label:"Посилання <a href> є"},
+    ];
+    const clWrap=el("div","sim-checklist"); clWrap.style.marginTop="12px";
+    const checkNodes={};
+    CHECKS.forEach(c=>{
+      const row=el("div","sim-check-row"+(isDone()?" pass":""));
+      row.innerHTML=`<span class="sim-check-icon">${isDone()?"✓":"○"}</span>${c.label}`;
+      checkNodes[c.key]=row; clWrap.appendChild(row);
+    });
+    container.appendChild(clWrap);
+
+    const resultDiv=el("div","sim-result"); resultDiv.style.marginTop="8px";
+    if(isDone()){resultDiv.className="sim-result success";resultDiv.textContent="Виконано. Ваша перша веб-сторінка містить усі три елементи!";}
+    container.appendChild(resultDiv);
+
+    function checkCode(html){
+      const res={h1:/<h1[^>]*>[\s\S]*?<\/h1>/i.test(html),p:/<p[^>]*>[\s\S]*?<\/p>/i.test(html),a:/<a\s+[^>]*href[^>]*>/i.test(html)};
+      let passed=0;
+      CHECKS.forEach(c=>{
+        const row=checkNodes[c.key];
+        if(res[c.key]){row.className="sim-check-row pass";row.querySelector(".sim-check-icon").textContent="✓";passed++;}
+        else{row.className="sim-check-row";row.querySelector(".sim-check-icon").textContent="○";}
+      });
+      if(passed===CHECKS.length){
+        resultDiv.className="sim-result success"; resultDiv.textContent="Виконано. Ваша перша веб-сторінка містить усі три елементи!";
+        textarea.disabled=true;
+        if(!window._demo&&window.Progress&&Progress.setSimulatorDone) Progress.setSimulatorDone(simId);
+      } else {resultDiv.className="sim-result";resultDiv.textContent="";}
+    }
+
+    textarea.addEventListener("input",()=>{iframe.srcdoc=textarea.value;checkCode(textarea.value);});
+    if(isDone()) checkCode(HTML_DONE);
+  }
+
+  /* ------------------------------------------------------------------ */
   /*  DISPATCHER                                                          */
   /* ------------------------------------------------------------------ */
   const COMPONENTS = {
     EmailReply,
     FileManager,
     JobBoard,
+    DiiaForm,
+    DocsEditor,
+    SheetsEditor,
+    AIChat,
+    FactChecker,
+    HTMLEditor,
   };
 
   window.Simulators = {
