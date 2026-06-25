@@ -516,6 +516,53 @@ figure.fig img { cursor:zoom-in; }
 .sim-fm-folder.droppable { border-color:var(--blue); cursor:pointer; }
 .sim-fm-folder.droppable:hover { background:color-mix(in srgb,var(--blue) 6%,transparent); }
 
+/* ---- Job Board ---- */
+.jb-body { display:grid; grid-template-columns:1fr; }
+@media(min-width:640px){ .jb-body { grid-template-columns:1fr 1fr; } }
+
+.jb-panel { padding:16px 20px; }
+.jb-list-panel { border-right:0; }
+@media(min-width:640px){ .jb-list-panel { border-right:1px solid var(--border); } }
+
+.jb-filters { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px; }
+.jb-filter {
+  padding:4px 12px; font-size:.8rem; font-weight:600; border-radius:20px;
+  border:1.5px solid var(--border); background:var(--bg); color:var(--muted); cursor:pointer;
+  transition:border-color .12s, color .12s, background .12s;
+}
+.jb-filter:hover { border-color:var(--blue); color:var(--blue); }
+.jb-filter.active { border-color:var(--blue); background:var(--blue); color:#fff; }
+
+.jb-grid { display:flex; flex-direction:column; gap:8px; }
+.jb-card {
+  padding:10px 12px; border:1.5px solid var(--border); border-radius:8px;
+  cursor:pointer; background:var(--bg);
+  transition:border-color .12s, background .12s;
+}
+.jb-card:hover { border-color:var(--blue); }
+.jb-card.active { border-color:var(--blue); background:color-mix(in srgb,var(--blue) 5%,transparent); }
+
+.jb-cat-badge {
+  display:inline-block; padding:2px 8px; border-radius:3px; font-size:.72rem; font-weight:700;
+  letter-spacing:.04em; text-transform:uppercase; margin-bottom:4px;
+  background:color-mix(in srgb,var(--blue) 10%,transparent); color:var(--blue);
+}
+.jb-card-title   { font-size:.92rem; font-weight:700; color:var(--text); margin-bottom:2px; }
+.jb-card-company { font-size:.8rem; color:var(--muted); margin-bottom:2px; }
+.jb-card-meta    { font-size:.78rem; color:var(--muted); }
+
+.jb-back { margin-bottom:14px; padding:4px 10px; font-size:.82rem; }
+.jb-detail-title   { font-size:1rem; font-weight:700; margin:6px 0 2px; }
+.jb-detail-company { font-size:.85rem; color:var(--muted); margin-bottom:4px; }
+.jb-detail-meta    { font-size:.8rem; color:var(--muted); margin-bottom:10px; }
+.jb-detail-desc    { font-size:.88rem; line-height:1.6; margin-bottom:10px; }
+.jb-req-label      { font-size:.8rem; font-weight:700; color:var(--muted); margin-bottom:4px; }
+.jb-req-list { margin:0 0 14px 16px; padding:0; font-size:.85rem; }
+.jb-req-list li { margin-bottom:3px; }
+
+.jb-email-form { border-top:1px solid var(--border); padding-top:14px; margin-top:6px; }
+.jb-done-banner { border-radius:0 0 8px 8px; }
+
 /* ---- Режим проєктора ---- */
 body.projector { font-size:26px; }
 body.projector .layout { grid-template-columns:1fr; }

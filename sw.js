@@ -1,4 +1,4 @@
-const CACHE = 'op8-v1';
+const CACHE = 'op8-v3';
 const PRECACHE = [
   './',
   './index.html',
@@ -12,6 +12,7 @@ const PRECACHE = [
   './js/progress.js',
   './js/sync.js',
   './js/trainer.js',
+  './js/simulators.js',
   './js/certificate.js',
   './js/instructor.js',
   './content/course.js',

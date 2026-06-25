@@ -303,11 +303,286 @@
   }
 
   /* ------------------------------------------------------------------ */
+  /*  JOB BOARD SIMULATOR (M6 — Резюме, портфоліо і Біржа праці)        */
+  /* ------------------------------------------------------------------ */
+  /*
+     Сценарій: офлайн-копія біржі workprison.com.ua — 10 вакансій,
+     фільтр за категорією. Клік на вакансію → деталі → «Відгукнутися»
+     → email-форма з валідацією (5 критеріїв). Той самий шлях, що
+     описаний у тексті M6: навички → резюме → відгук на вакансію.
+  */
+  const JB_JOBS = [
+    { id:1, cat:"Оператор ПК",
+      title:"Оператор введення даних",
+      company:"ТОВ «Логістик Груп»", email:"hr@logistikgroup.com.ua",
+      salary:"від 8 000 грн", format:"Дистанційно",
+      desc:"Введення замовлень у базу даних, перевірка відповідності накладних. Потрібна увага та впевнена робота з таблицями.",
+      req:["MS Excel або Google Sheets","Уважність","Швидкий набір тексту"] },
+    { id:2, cat:"Тексти",
+      title:"Копірайтер — опис товарів",
+      company:"Інтернет-магазин «HomeStyle»", email:"content@homestyle.ua",
+      salary:"від 6 000 грн + відрядна", format:"Дистанційно",
+      desc:"Написання коротких описів товарів (50–150 слів). Є шаблони й приклади. Підходить для початківців.",
+      req:["Грамотна українська мова","Word або Google Docs","Відповідальність"] },
+    { id:3, cat:"Документи",
+      title:"Помічник діловода",
+      company:"ГО «Правова допомога»", email:"office@pravdop.org.ua",
+      salary:"за домовленістю", format:"Дистанційно",
+      desc:"Оформлення документів, ведення реєстрів у Word та Excel, підготовка матеріалів до архіву.",
+      req:["Word, Excel","Акуратність","Базова комп'ютерна грамотність"] },
+    { id:4, cat:"Тексти",
+      title:"Транскрибатор (аудіо → текст)",
+      company:"Студія «Медіапро»", email:"jobs@mediapro.com.ua",
+      salary:"від 40 грн/хв аудіо", format:"Дистанційно",
+      desc:"Переводити аудіо- та відеозаписи в текст. Потрібна увага й грамотність, спеціальних знань не треба.",
+      req:["Швидкий набір","Грамотна мова","Навушники"] },
+    { id:5, cat:"Тексти",
+      title:"Коректор текстів",
+      company:"Видавництво «Слово»", email:"editor@slovopub.com.ua",
+      salary:"від 7 000 грн", format:"Дистанційно",
+      desc:"Перевірка текстів на граматичні й пунктуаційні помилки. Робота у Google Docs.",
+      req:["Знання української орфографії","Уважність","Google Docs"] },
+    { id:6, cat:"Оператор ПК",
+      title:"Адміністратор бази клієнтів",
+      company:"Медичний центр «Здоров'я»", email:"admin@zdorovua.com.ua",
+      salary:"від 9 000 грн", format:"Дистанційно",
+      desc:"Внесення даних у CRM-систему, обробка заявок. Навчання від компанії.",
+      req:["Впевнена робота з ПК","Акуратність","Конфіденційність"] },
+    { id:7, cat:"Дизайн",
+      title:"Помічник дизайнера (Canva)",
+      company:"Агенція «Бренд»", email:"design@brand-agency.com.ua",
+      salary:"від 5 000 грн", format:"Дистанційно",
+      desc:"Виготовлення банерів за шаблонами у Canva. Навчання надається.",
+      req:["Базові навички ПК","Естетичний смак","Canva або бажання навчитися"] },
+    { id:8, cat:"Веб",
+      title:"Верстальник сайтів (початковий рівень)",
+      company:"Студія «WebStart»", email:"hr@webstart.com.ua",
+      salary:"від 10 000 грн", format:"Дистанційно",
+      desc:"Верстка сторінок за макетами (HTML/CSS). Компанія навчає з нуля.",
+      req:["Базова грамотність","Логічне мислення","Готовність навчатися"] },
+    { id:9, cat:"Тексти",
+      title:"Контент-менеджер соцмереж",
+      company:"Бренд «Стиль UA»", email:"smm@styleuа.com.ua",
+      salary:"від 6 500 грн", format:"Дистанційно",
+      desc:"Підготовка текстів для публікацій. Є контент-план і шаблони.",
+      req:["Грамотна мова","Google Docs","Відповідальність"] },
+    { id:10, cat:"Документи",
+      title:"Оцифровщик документів",
+      company:"Консалтинг «Документ»", email:"archive@doc-consult.ua",
+      salary:"від 7 500 грн", format:"Дистанційно",
+      desc:"Сканування, впорядкування й іменування документів за стандартом.",
+      req:["Уважність","Excel або таблиці","Базова робота з файлами"] },
+  ];
+  const JB_CATS = ["Всі","Оператор ПК","Тексти","Документи","Дизайн","Веб"];
+
+  function JobBoard(container, block, moduleId) {
+    const simId = block.id;
+    const wasDone = () => !!(window.Progress && Progress.getSimulatorDone && Progress.getSimulatorDone(simId) && Progress.getSimulatorDone(simId).done);
+
+    container.innerHTML = "";
+    const wrap = el("div", "sim-card");
+
+    // Header
+    const hd = el("div", "sim-header");
+    hd.appendChild(el("h2", "sim-title", "🏗 Біржа праці — workprison.com.ua"));
+    hd.appendChild(el("p", "sim-desc",
+      "Оберіть вакансію, ознайомтесь з умовами та надішліть відгук. " +
+      "Відгук має містити п'ять обов'язкових елементів ділового листа."));
+    wrap.appendChild(hd);
+
+    let activeCat = "Всі";
+    let activeJob = null;
+    let applied = false;
+
+    // Panels
+    const listPanel  = el("div", "jb-panel jb-list-panel");
+    const detailPanel = el("div", "jb-panel jb-detail-panel");
+    detailPanel.style.display = "none";
+    const body = el("div", "jb-body");
+    body.appendChild(listPanel); body.appendChild(detailPanel);
+    wrap.appendChild(body);
+
+    // Done banner
+    const doneBanner = el("div", "sim-result success jb-done-banner");
+    doneBanner.style.margin = "0 24px 20px";
+    if (wasDone()) { doneBanner.textContent = "Виконано. Відгук надіслано."; }
+    wrap.appendChild(doneBanner);
+
+    function renderList() {
+      listPanel.innerHTML = "";
+
+      // Filter bar
+      const filterBar = el("div", "jb-filters");
+      JB_CATS.forEach(cat => {
+        const btn = el("button", "jb-filter" + (cat === activeCat ? " active" : ""), cat);
+        btn.addEventListener("click", () => { activeCat = cat; activeJob = null; renderList(); detailPanel.style.display = "none"; });
+        filterBar.appendChild(btn);
+      });
+      listPanel.appendChild(filterBar);
+
+      // Cards
+      const grid = el("div", "jb-grid");
+      const jobs = activeCat === "Всі" ? JB_JOBS : JB_JOBS.filter(j => j.cat === activeCat);
+      jobs.forEach(job => {
+        const card = el("div", "jb-card" + (activeJob && activeJob.id === job.id ? " active" : ""));
+        card.appendChild(el("div", "jb-cat-badge", job.cat));
+        card.appendChild(el("div", "jb-card-title", job.title));
+        card.appendChild(el("div", "jb-card-company", job.company));
+        card.appendChild(el("div", "jb-card-meta", `${job.salary} · ${job.format}`));
+        card.addEventListener("click", () => { activeJob = job; renderList(); renderDetail(); detailPanel.style.display = ""; });
+        grid.appendChild(card);
+      });
+      listPanel.appendChild(grid);
+    }
+
+    const JB_CHECKS = [
+      { key:"subj",   label:"Тема заповнена"                     },
+      { key:"greet",  label:"Привітання"                         },
+      { key:"vacancy",label:"Назва вакансії або «вакансія»"       },
+      { key:"resume", label:"Згадка про резюме або портфоліо"     },
+      { key:"sign",   label:"Підпис"                             },
+    ];
+
+    function renderDetail() {
+      detailPanel.innerHTML = "";
+
+      if (!activeJob) return;
+      const job = activeJob;
+
+      const backBtn = el("button", "btn ghost jb-back", "← Назад до списку");
+      backBtn.addEventListener("click", () => { activeJob = null; detailPanel.style.display = "none"; renderList(); });
+      detailPanel.appendChild(backBtn);
+
+      detailPanel.appendChild(el("div", "jb-cat-badge", job.cat));
+      detailPanel.appendChild(el("h3", "jb-detail-title", job.title));
+      detailPanel.appendChild(el("div", "jb-detail-company", job.company));
+      detailPanel.appendChild(el("div", "jb-detail-meta", `${job.salary} · ${job.format}`));
+      detailPanel.appendChild(el("p", "jb-detail-desc", job.desc));
+
+      const reqList = el("ul", "jb-req-list");
+      job.req.forEach(r => reqList.appendChild(el("li", null, r)));
+      const reqBlock = el("div");
+      reqBlock.appendChild(el("div", "jb-req-label", "Вимоги:"));
+      reqBlock.appendChild(reqList);
+      detailPanel.appendChild(reqBlock);
+
+      // Email form
+      const formDiv = el("div", "jb-email-form");
+      formDiv.appendChild(el("h4", "sim-composer-title", "Відгук на вакансію"));
+
+      const metaRow = el("div", "sim-email-meta");
+      metaRow.innerHTML = `<div><span class="sim-label">Кому:</span> ${job.email}</div>`;
+      formDiv.appendChild(metaRow);
+
+      const subjWrap = el("div", "sim-field-wrap");
+      const subjLbl = el("label", "sim-field-label"); subjLbl.textContent = "Тема:";
+      const subjInp = el("input", "sim-inp");
+      subjInp.placeholder = "Тема листа...";
+      subjInp.value = applied ? `Відгук на вакансію: ${job.title}` : "";
+      if (applied) subjInp.disabled = true;
+      subjLbl.appendChild(subjInp); subjWrap.appendChild(subjLbl);
+      formDiv.appendChild(subjWrap);
+
+      const bodyWrap = el("div", "sim-field-wrap");
+      const bodyLbl = el("label", "sim-field-label"); bodyLbl.textContent = "Текст листа:";
+      const bodyTA = el("textarea", "sim-textarea");
+      bodyTA.placeholder = "Текст листа...";
+      bodyTA.rows = 6;
+      if (applied) {
+        bodyTA.value = `Добрий день!\n\nМене зацікавила ваша вакансія «${job.title}». Маю відповідні навички та готовий до роботи.\n\nДодаю резюме для ознайомлення. Готовий відповісти на запитання.\n\nЗ повагою,\n[Ваше ім'я]`;
+        bodyTA.disabled = true;
+      }
+      bodyLbl.appendChild(bodyTA); bodyWrap.appendChild(bodyLbl);
+      formDiv.appendChild(bodyWrap);
+
+      // Checklist
+      const clWrap = el("div", "sim-checklist");
+      const checkNodes = {};
+      JB_CHECKS.forEach(c => {
+        const row = el("div", "sim-check-row" + (applied ? " pass" : ""));
+        row.innerHTML = `<span class="sim-check-icon">${applied ? "✓" : "○"}</span>${c.label}`;
+        checkNodes[c.key] = row;
+        clWrap.appendChild(row);
+      });
+      formDiv.appendChild(clWrap);
+
+      const checkBtn = el("button", applied ? "btn ghost sim-btn" : "btn primary sim-btn", applied ? "Повторити" : "Надіслати відгук");
+      const resultDiv = el("div", "sim-result" + (applied ? " success" : ""));
+      if (applied) resultDiv.textContent = "Відгук надіслано.";
+      formDiv.appendChild(checkBtn);
+      formDiv.appendChild(resultDiv);
+
+      checkBtn.addEventListener("click", () => {
+        if (applied) {
+          // Reset
+          applied = false;
+          subjInp.disabled = false; bodyTA.disabled = false;
+          subjInp.value = ""; bodyTA.value = "";
+          JB_CHECKS.forEach(c => {
+            const row = checkNodes[c.key];
+            row.className = "sim-check-row";
+            row.querySelector(".sim-check-icon").textContent = "○";
+          });
+          resultDiv.className = "sim-result"; resultDiv.textContent = "";
+          checkBtn.textContent = "Надіслати відгук"; checkBtn.className = "btn primary sim-btn";
+          return;
+        }
+
+        const subj = subjInp.value.trim();
+        const bodyRaw = bodyTA.value;
+        const bodyL = bodyRaw.toLowerCase();
+        const titleL = job.title.toLowerCase().split(" ")[0]; // перше слово вакансії
+
+        const res = {
+          subj:    subj.length > 3,
+          greet:   /добрий|вітаю|шановн/i.test(bodyL),
+          vacancy: new RegExp(titleL + "|вакансі|посад", "i").test(bodyL) || /вакансі|посад/i.test(subj),
+          resume:  /резюме|портфоліо|надішлю|додаю|кваліфікац|досвід/i.test(bodyL),
+          sign:    /(з повагою|щиро|ваш[аи]?)/i.test(bodyL) || /\n[А-ЯІЇЄ]/.test(bodyRaw),
+        };
+
+        let passed = 0;
+        JB_CHECKS.forEach(c => {
+          const row = checkNodes[c.key];
+          if (res[c.key]) {
+            row.className = "sim-check-row pass";
+            row.querySelector(".sim-check-icon").textContent = "✓";
+            passed++;
+          } else {
+            row.className = "sim-check-row fail";
+            row.querySelector(".sim-check-icon").textContent = "✗";
+          }
+        });
+
+        if (passed === JB_CHECKS.length) {
+          applied = true;
+          subjInp.disabled = true; bodyTA.disabled = true;
+          resultDiv.className = "sim-result success";
+          resultDiv.textContent = "Відгук надіслано.";
+          checkBtn.textContent = "Повторити"; checkBtn.className = "btn ghost sim-btn";
+          doneBanner.textContent = "Виконано. Відгук надіслано.";
+          if (!window._demo && window.Progress && Progress.setSimulatorDone) Progress.setSimulatorDone(simId);
+        } else {
+          const missing = JB_CHECKS.filter(c => !res[c.key]).map(c => c.label).join(", ");
+          resultDiv.className = "sim-result warn";
+          resultDiv.textContent = "Відсутнє: " + missing + ".";
+        }
+      });
+
+      detailPanel.appendChild(formDiv);
+    }
+
+    renderList();
+    container.appendChild(wrap);
+  }
+
+  /* ------------------------------------------------------------------ */
   /*  DISPATCHER                                                          */
   /* ------------------------------------------------------------------ */
   const COMPONENTS = {
     EmailReply,
     FileManager,
+    JobBoard,
   };
 
   window.Simulators = {
