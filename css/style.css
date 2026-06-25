@@ -725,6 +725,8 @@ body.projector .topbar .iconbtn:not(#projBtn):not(#themeBtn) { display:none; }
 .factcheck-verdict { padding:9px 14px; font-size:.81rem; line-height:1.5; }
 .factcheck-verdict.correct { background:#eaf5ef; color:#1e7a45; border-top:1px solid #c3e6cb; }
 .factcheck-verdict.wrong   { background:#fdecea; color:#a02020; border-top:1px solid #f5c6cb; }
+.factcheck-ctr-row { font-size:.8rem; color:#607080; margin-top:12px; padding:0 2px; }
+.factcheck-counter { font-weight:700; color:#0C3F7F; }
 
 /* ================================================================== */
 /* HTML EDITOR SIMULATOR                                                */

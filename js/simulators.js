@@ -749,7 +749,17 @@
     [["Звичайний текст","p"],["Заголовок 1","h1"],["Заголовок 2","h2"]].forEach(([lbl,val])=>{
       const o=document.createElement("option"); o.value=val; o.textContent=lbl; headingSel.appendChild(o);
     });
-    headingSel.addEventListener("change",()=>{if(!isDone()) document.execCommand("formatBlock",false,headingSel.value);});
+    // зберігаємо виділення перед тим, як <select> забере фокус у contenteditable
+    let _hSel=null;
+    headingSel.addEventListener("mousedown",()=>{const s=window.getSelection();if(s&&s.rangeCount>0)_hSel=s.getRangeAt(0).cloneRange();});
+    headingSel.addEventListener("change",()=>{
+      if(!isDone()){
+        if(_hSel){const s=window.getSelection();s.removeAllRanges();s.addRange(_hSel);}
+        document.execCommand("formatBlock",false,headingSel.value);
+        checkProgress();
+      }
+      _hSel=null;
+    });
 
     const fontSel = el("select","gdocs-font-sel");
     ["Arial","Times New Roman","Courier New"].forEach(f=>{
@@ -932,9 +942,11 @@
         resultDiv.textContent="Правильно! =SUM(B2:B6) = 8 550 грн. Загальна сума витрат.";
         if(!window._demo&&window.Progress&&Progress.setSimulatorDone) Progress.setSimulatorDone(simId);
       } else if(key==="B8"&&raw.toUpperCase()==="=MAX(B2:B6)"){
-        const bonusDiv=el("div","sim-result success"); bonusDiv.style.marginTop="6px";
-        bonusDiv.textContent="Бонус! =MAX(B2:B6) = 3 500 грн (найбільша стаття — оренда).";
-        resultDiv.parentNode.insertBefore(bonusDiv,resultDiv.nextSibling);
+        if(!resultDiv.parentNode.querySelector(".gsheets-bonus")){
+          const bonusDiv=el("div","sim-result success gsheets-bonus"); bonusDiv.style.marginTop="6px";
+          bonusDiv.textContent="Бонус! =MAX(B2:B6) = 3 500 грн (найбільша стаття — оренда).";
+          resultDiv.parentNode.insertBefore(bonusDiv,resultDiv.nextSibling);
+        }
       }
     }
   }
@@ -1004,7 +1016,7 @@
     const scoreRow=el("div","aichat-score-row");
     const scoreItems={};
     [["task","📌 Завдання"],["context","🔍 Контекст"],["format","📋 Формат"]].forEach(([k,lbl])=>{
-      const item=el("div","aichat-score-item",lbl); scoreItems[k]=item; scoreRow.appendChild(item);
+      const item=el("div","aichat-score-item"+(isDone()?" pass":""),lbl); scoreItems[k]=item; scoreRow.appendChild(item);
     });
     main.appendChild(scoreRow);
 
@@ -1083,6 +1095,7 @@
     let submitted=false;
     const stmts=el("div","factcheck-statements");
     const verdicts={}, btnPairs={};
+    const ctr=el("span","factcheck-counter","0 / "+FC_STATEMENTS.length);
 
     FC_STATEMENTS.forEach((s,i)=>{
       const card=el("div","factcheck-card");
@@ -1098,6 +1111,7 @@
         answers[i]=btn===bB?"вірю":"перевірити";
         bB.classList.toggle("selected",answers[i]==="вірю");
         bC.classList.toggle("selected",answers[i]==="перевірити");
+        ctr.textContent=Object.keys(answers).length+" / "+FC_STATEMENTS.length;
       }));
       btnRow.appendChild(bB); btnRow.appendChild(bC); card.appendChild(btnRow);
       const v=el("div","factcheck-verdict"); v.style.display="none"; card.appendChild(v);
@@ -1106,7 +1120,11 @@
     });
     container.appendChild(stmts);
 
-    const submitBtn=el("button","btn primary sim-btn"); submitBtn.textContent="Перевірити відповіді"; submitBtn.style.marginTop="14px";
+    const ctrRow=el("div","factcheck-ctr-row");
+    ctrRow.appendChild(el("span",null,"Обрано: ")); ctrRow.appendChild(ctr);
+    container.appendChild(ctrRow);
+
+    const submitBtn=el("button","btn primary sim-btn"); submitBtn.textContent="Перевірити відповіді"; submitBtn.style.marginTop="6px";
     const resultDiv=el("div","sim-result"); resultDiv.style.marginTop="10px";
     container.appendChild(submitBtn); container.appendChild(resultDiv);
 
@@ -1135,7 +1153,7 @@
       if(correct>=4){
         submitted=true;
         Object.values(btnPairs).forEach(p=>{p.bB.disabled=true;p.bC.disabled=true;});
-        submitBtn.style.display="none";
+        submitBtn.style.display="none"; ctrRow.style.display="none";
         resultDiv.className="sim-result success"; resultDiv.textContent=correct+" з 5 правильно. Виконано!";
         if(!window._demo&&window.Progress&&Progress.setSimulatorDone) Progress.setSimulatorDone(simId);
       } else {
@@ -1149,6 +1167,7 @@
             delete answers[i];
           }
         });
+        ctr.textContent=Object.keys(answers).length+" / "+FC_STATEMENTS.length;
       }
     });
   }
