@@ -1282,6 +1282,159 @@
   }
 
   /* ------------------------------------------------------------------ */
+  /*  PC BUILDER SIMULATOR (M1 — Архітектура та історія цифрових пристроїв) */
+  /* ------------------------------------------------------------------ */
+  const PC_PARTS = [
+    { id:"cpu",    icon:"🔲", name:"Процесор (CPU)",          slot:"cpu-socket",
+      desc:"Мозок комп'ютера. Виконує мільярди обчислень за секунду.",
+      placed:"✅ CPU у сокеті! Він виконує всі команди й керує рештою компонентів." },
+    { id:"cooler", icon:"🌬", name:"Кулер процесора",          slot:"cpu-cooler",
+      desc:"Охолоджує CPU. Без кулера процесор перегрівається за секунди.",
+      placed:"✅ Кулер встановлено! Тримає температуру CPU у межах 30–80 °C." },
+    { id:"ram",    icon:"📏", name:"Оперативна пам'ять (RAM)", slot:"ram-slots",
+      desc:"Тимчасова пам'ять. Програми живуть тут поки відкриті. Вимкнув — зникло.",
+      placed:"✅ RAM у DIMM-слотах! Саме тут зберігаються відкриті програми та дані." },
+    { id:"ssd",    icon:"💾", name:"SSD-накопичувач (M.2)",    slot:"m2-slot",
+      desc:"Постійна пам'ять. Зберігає ОС і файли навіть без живлення.",
+      placed:"✅ SSD підключено! Windows стартуватиме за 10–15 с замість хвилини з HDD." },
+    { id:"gpu",    icon:"🖥️", name:"Відеокарта (GPU)",          slot:"pcie-slot",
+      desc:"Обробляє зображення. Ігри та відео потребують окремої GPU. Базові ПК обходяться вбудованою в CPU.",
+      placed:"✅ GPU у слоті PCIe x16! Це найдовший слот на платі — спеціально для відеокарт." },
+    { id:"psu",    icon:"⚡", name:"Блок живлення (PSU)",       slot:"psu-bay",
+      desc:"Перетворює 220 В у +12 В, +5 В, +3.3 В для кожного компонента.",
+      placed:"✅ PSU у відсіку! Без нього жоден компонент не отримає живлення." },
+  ];
+
+  const PC_SLOT_DEFS = [
+    { id:"cpu-socket", label:"CPU Socket",    accepts:"cpu",    size:"sq"   },
+    { id:"cpu-cooler", label:"Кулер CPU",     accepts:"cooler", size:"sq"   },
+    { id:"ram-slots",  label:"DIMM (RAM ×2)", accepts:"ram",    size:"tall" },
+    { id:"m2-slot",    label:"M.2 SSD",       accepts:"ssd",    size:"bar"  },
+    { id:"pcie-slot",  label:"PCIe x16",      accepts:"gpu",    size:"wide" },
+    { id:"psu-bay",    label:"PSU відсік",    accepts:"psu",    size:"wide" },
+  ];
+
+  function PCBuilder(container, block, moduleId){
+    const simId=block.id;
+    const isDone=()=>!!(window.Progress&&Progress.getSimulatorDone&&Progress.getSimulatorDone(simId)&&Progress.getSimulatorDone(simId).done);
+
+    container.innerHTML="";
+    const simHdr=el("div","sim-header");
+    simHdr.appendChild(el("h2","sim-title","🖥️ Зібери комп'ютер: встанови компоненти"));
+    simHdr.appendChild(el("p","sim-desc","Клацніть на компонент зліва — з'явиться підсвічений слот праворуч. Клацніть на нього, щоб встановити. Зберіть усі 6 компонентів."));
+    container.appendChild(simHdr);
+
+    const done=isDone();
+    const placed={};
+    if(done) PC_PARTS.forEach(p=>{placed[p.id]=true;});
+    let selected=null;
+
+    const layout=el("div","pcb-layout");
+    const tray=el("div","pcb-tray");
+    const caseEl=el("div","pcb-case");
+
+    // --- Tray (left) ---
+    tray.appendChild(el("div","pcb-tray-title","🔧 Компоненти"));
+    const partCards={};
+    PC_PARTS.forEach(p=>{
+      const card=el("div","pcb-part-card"+(placed[p.id]?" placed":""));
+      card.appendChild(el("span","pcb-part-icon",p.icon));
+      const info=el("div","pcb-part-info");
+      info.appendChild(el("div","pcb-part-name",p.name));
+      info.appendChild(el("div","pcb-part-desc",p.desc));
+      card.appendChild(info); partCards[p.id]=card; tray.appendChild(card);
+      if(!done) card.addEventListener("click",()=>{
+        if(placed[p.id]) return;
+        selected=(selected===p.id)?null:p.id;
+        renderSel();
+      });
+    });
+
+    // --- Case (right) ---
+    caseEl.appendChild(el("div","pcb-case-title","💻 Корпус ПК"));
+    const mb=el("div","pcb-motherboard");
+    mb.appendChild(el("div","pcb-mb-label","МАТЕРИНСЬКА ПЛАТА"));
+    const mbGrid=el("div","pcb-mb-grid");
+    const slotEls={};
+
+    PC_SLOT_DEFS.forEach(sd=>{
+      const p=PC_PARTS.find(x=>x.id===sd.accepts);
+      const cls="pcb-slot pcb-slot--"+sd.size+(placed[sd.accepts]?" filled":"");
+      const s=el("div",cls);
+      s.dataset.slotId=sd.id;
+      if(placed[sd.accepts]){
+        s.appendChild(el("span","pcb-slot-icon",p.icon));
+        s.appendChild(el("span","pcb-slot-label",sd.label));
+      } else {
+        s.appendChild(el("span","pcb-slot-empty-label",sd.label));
+      }
+      if(!done) s.addEventListener("click",()=>handleSlotClick(sd,s));
+      slotEls[sd.id]=s;
+      if(sd.id!=="psu-bay") mbGrid.appendChild(s);
+    });
+    mb.appendChild(mbGrid); caseEl.appendChild(mb);
+
+    const psuSec=el("div","pcb-psu-section");
+    psuSec.appendChild(slotEls["psu-bay"]); caseEl.appendChild(psuSec);
+
+    layout.appendChild(tray); layout.appendChild(caseEl);
+    container.appendChild(layout);
+
+    const infoBox=el("div","pcb-info-box");
+    if(done){infoBox.className="pcb-info-box success";infoBox.textContent="Потік даних: CPU ↔ RAM (миттєво) ↔ SSD (повільніше) — GPU отримує команди від CPU — PSU живить усіх.";}
+    container.appendChild(infoBox);
+
+    const resultDiv=el("div","sim-result");
+    if(done){resultDiv.className="sim-result success";resultDiv.textContent="Виконано. Усі компоненти встановлені правильно.";}
+    container.appendChild(resultDiv);
+
+    function handleSlotClick(sd,sEl){
+      if(!selected) return;
+      const selPart=PC_PARTS.find(x=>x.id===selected);
+      if(sd.accepts===selected){
+        // правильно
+        placed[selected]=true;
+        sEl.className="pcb-slot pcb-slot--"+sd.size+" filled flash-ok";
+        sEl.innerHTML="";
+        sEl.appendChild(el("span","pcb-slot-icon",selPart.icon));
+        sEl.appendChild(el("span","pcb-slot-label",sd.label));
+        partCards[selected].classList.add("placed");
+        infoBox.className="pcb-info-box success"; infoBox.textContent=selPart.placed;
+        setTimeout(()=>sEl.classList.remove("flash-ok"),700);
+        selected=null; renderSel(); checkAllDone();
+      } else {
+        // помилково
+        sEl.classList.add("flash-err");
+        setTimeout(()=>sEl.classList.remove("flash-err"),600);
+        const correct=PC_SLOT_DEFS.find(x=>x.accepts===selected);
+        infoBox.className="pcb-info-box warn";
+        infoBox.textContent=`«${selPart.name}» встановлюється у «${correct.label}», а не сюди. Спробуй ще раз.`;
+      }
+    }
+
+    function renderSel(){
+      PC_PARTS.forEach(p=>partCards[p.id].classList.toggle("selected",selected===p.id));
+      PC_SLOT_DEFS.forEach(sd=>{
+        slotEls[sd.id].classList.toggle("highlight",!!selected&&sd.accepts===selected&&!placed[sd.accepts]);
+      });
+      if(selected){
+        const p=PC_PARTS.find(x=>x.id===selected);
+        infoBox.className="pcb-info-box"; infoBox.textContent="Обрано: «"+p.name+"». Клацни на підсвічений слот у корпусі.";
+      }
+    }
+
+    function checkAllDone(){
+      if(Object.keys(placed).length===PC_PARTS.length){
+        resultDiv.className="sim-result success";
+        resultDiv.textContent="Виконано! Усі компоненти на місці. Комп'ютер готовий до роботи!";
+        infoBox.className="pcb-info-box success";
+        infoBox.textContent="Потік даних: CPU ↔ RAM (миттєво) ↔ SSD (повільніше) — GPU отримує команди від CPU — PSU живить усіх.";
+        if(!window._demo&&window.Progress&&Progress.setSimulatorDone) Progress.setSimulatorDone(simId);
+      }
+    }
+  }
+
+  /* ------------------------------------------------------------------ */
   /*  DISPATCHER                                                          */
   /* ------------------------------------------------------------------ */
   const COMPONENTS = {
@@ -1294,6 +1447,7 @@
     AIChat,
     FactChecker,
     HTMLEditor,
+    PCBuilder,
   };
 
   window.Simulators = {

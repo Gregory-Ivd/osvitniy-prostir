@@ -1,4 +1,4 @@
-const CACHE = 'op8-v5';
+const CACHE = 'op8-v6';
 const PRECACHE = [
   './',
   './index.html',
