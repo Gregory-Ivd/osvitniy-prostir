@@ -946,7 +946,7 @@
       if(key==="B7"&&raw.toUpperCase()==="=SUM(B2:B6)"){
         resultDiv.className="sim-result success";
         resultDiv.textContent="Правильно! =SUM(B2:B6) = 8 550 грн. Загальна сума витрат.";
-        if(!window._demo&&window.Progress&&Progress.setSimulatorDone) Progress.setSimulatorDone(simId);
+        if(!window._demo&&window.Progress&&Progress.setSimulatorDone&&!isDone()) Progress.setSimulatorDone(simId);
       } else if(key==="B8"&&raw.toUpperCase()==="=MAX(B2:B6)"){
         if(!resultDiv.parentNode.querySelector(".gsheets-bonus")){
           const bonusDiv=el("div","sim-result success gsheets-bonus"); bonusDiv.style.marginTop="6px";
@@ -1056,13 +1056,14 @@
       typingMsg.appendChild(tAv); typingMsg.appendChild(tBubble);
       messages.appendChild(typingMsg); messages.scrollTop=messages.scrollHeight;
       setTimeout(()=>{
+        if(!container.isConnected) return;
         typingMsg.remove();
         addMsg("assistant",getAIResponse(text,score));
         if(score.task&&score.context&&score.format){
           resultDiv.className="sim-result success";
           resultDiv.textContent="Виконано! Усі три критерії виконані. Чудовий промпт!";
           input.disabled=true; sendBtn.disabled=true;
-          if(!window._demo&&window.Progress&&Progress.setSimulatorDone) Progress.setSimulatorDone(simId);
+          if(!window._demo&&window.Progress&&Progress.setSimulatorDone&&!isDone()) Progress.setSimulatorDone(simId);
         }
       },1200);
     }
@@ -1245,7 +1246,7 @@
     browserBar.innerHTML=`<div class="htmled-browser-dots"><span></span><span></span><span></span></div><div class="htmled-browser-url">мій-сайт.html</div>`;
     pvPanel.appendChild(browserBar);
     const iframe=document.createElement("iframe");
-    iframe.className="htmled-iframe"; iframe.sandbox="allow-same-origin"; iframe.srcdoc=textarea.value;
+    iframe.className="htmled-iframe"; iframe.sandbox=""; iframe.srcdoc=textarea.value;
     pvPanel.appendChild(iframe); panels.appendChild(pvPanel);
     shell.appendChild(panels);
     container.appendChild(shell);
@@ -1459,9 +1460,11 @@
     }
     function dragClean(pid){
       if(ghostEl){ghostEl.remove();ghostEl=null;}
-      if(partCards[pid]) partCards[pid].classList.remove("pcb-dragging");
+      if(pid&&partCards[pid]) partCards[pid].classList.remove("pcb-dragging");
       Object.values(slotEls).forEach(s=>s.classList.remove("pcb-hover"));
     }
+    function navCleanup(){ dragClean(dragId); dragId=null; }
+    window.addEventListener("hashchange", navCleanup, {once:true});
     function slotAt(x,y){
       for(const[sid,s] of Object.entries(slotEls)){
         const r=s.getBoundingClientRect();
@@ -1521,7 +1524,7 @@
         resultDiv.textContent="Виконано! Усі 9 компонентів на місці. Комп'ютер готовий!";
         infoBox.className="pcb-info-box success";
         infoBox.textContent="✅ Зібрано! CPU↔RAM (миттєво)↔SSD (постійно). GPU — картинка на монітор. PSU живить усе. Клавіатура і миша — пристрої вводу.";
-        if(!window._demo&&window.Progress&&Progress.setSimulatorDone) Progress.setSimulatorDone(simId);
+        if(!window._demo&&window.Progress&&Progress.setSimulatorDone&&!isDone()) Progress.setSimulatorDone(simId);
       }
     }
   }
