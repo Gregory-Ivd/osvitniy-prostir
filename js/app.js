@@ -392,6 +392,47 @@
       c.appendChild(r);
     }
 
+    /* #4b — мікро-рейтинг модуля (бігунки інтерес / складність) */
+    if(!window._demo){
+      const savedRating = Progress.getModuleRating(m.id);
+      const mrBox = elc("div","module-rating");
+      const mrTitle = elc("div","mr-title","Цей модуль для вас...");
+      mrBox.appendChild(mrTitle);
+      const mrBadge = elc("span","saved-badge","✓ збережено");
+      mrTitle.appendChild(mrBadge);
+
+      function mkSlider(id, leftEmoji, leftTxt, rightTxt, rightEmoji, savedVal){
+        const row = elc("div","mr-row");
+        const lblL = elc("span","mr-lbl", leftEmoji+" "+leftTxt);
+        const inp = document.createElement("input");
+        inp.type="range"; inp.min=1; inp.max=5; inp.value=savedVal||3;
+        inp.className="mr-slider"; inp.id=id;
+        const lblR = elc("span","mr-lbl mr-lbl-r", rightTxt+" "+rightEmoji);
+        row.appendChild(lblL); row.appendChild(inp); row.appendChild(lblR);
+        return {row, inp};
+      }
+
+      const {row:rI, inp:inpI} = mkSlider("mr-interest-"+m.id,
+        "😐","Нецікаво","Дуже цікаво","🤩", savedRating && savedRating.interest);
+      const {row:rD, inp:inpD} = mkSlider("mr-difficulty-"+m.id,
+        "😕","Важко","Легко","😊", savedRating && savedRating.difficulty);
+
+      mrBox.appendChild(rI); mrBox.appendChild(rD);
+      c.appendChild(mrBox);
+
+      let mrTimer=null;
+      function saveMR(){
+        clearTimeout(mrTimer);
+        mrTimer=setTimeout(()=>{
+          Progress.setModuleRating(m.id, {interest:+inpI.value, difficulty:+inpD.value});
+          mrBadge.classList.add("show");
+          setTimeout(()=>mrBadge.classList.remove("show"),2000);
+        },400);
+      }
+      inpI.addEventListener("input",saveMR);
+      inpD.addEventListener("input",saveMR);
+    }
+
     const foot = elc("div","module-foot");
     const prev = M[m.num-1], next = M[m.num+1];
     const left = elc("div");

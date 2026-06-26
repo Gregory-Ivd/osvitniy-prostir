@@ -123,6 +123,13 @@
       };
     },
 
+    setModuleRating(id, data) {
+      const m = mod(id);
+      m.rating = Object.assign({ ratedAt: stamp() }, data);
+      save();
+    },
+    getModuleRating(id) { return (state.modules[id] && state.modules[id].rating) || null; },
+
     setSurvey(data) { state.survey = Object.assign({ submittedAt: stamp() }, data); save(); },
     getSurvey() { return state.survey || null; },
 
