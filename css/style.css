@@ -381,12 +381,19 @@ a.link-card .card-more { color:var(--blue); word-break:break-all; }
 .mr-lbl { font-size:.8rem; color:var(--muted); white-space:nowrap; min-width:90px; }
 .mr-lbl-r { text-align:right; min-width:90px; }
 .mr-slider { flex:1; appearance:none; -webkit-appearance:none;
-  height:6px; border-radius:99px; background:var(--line);
-  outline:none; cursor:pointer; accent-color:var(--accent); }
-.mr-slider::-webkit-slider-thumb { appearance:none; -webkit-appearance:none;
-  width:20px; height:20px; border-radius:50%; background:var(--accent);
-  box-shadow:0 1px 4px rgba(0,0,0,.18); cursor:grab; }
-.mr-slider:active::-webkit-slider-thumb { cursor:grabbing; }
+  height:6px; border-radius:99px; background:#3a4460;
+  outline:none; cursor:pointer; }
+.mr-slider::-webkit-slider-thumb {
+  -webkit-appearance:none; appearance:none;
+  width:22px; height:22px; border-radius:50%;
+  background:#F39200; border:2px solid #fff;
+  box-shadow:0 1px 6px rgba(0,0,0,.4); cursor:grab; }
+.mr-slider:active::-webkit-slider-thumb { cursor:grabbing; background:#d97f00; }
+.mr-slider::-moz-range-thumb {
+  width:20px; height:20px; border-radius:50%;
+  background:#F39200; border:2px solid #fff;
+  box-shadow:0 1px 6px rgba(0,0,0,.4); cursor:grab; }
+[data-theme="light"] .mr-slider { background:#d0d8ea; }
 @media (max-width:480px) { .mr-lbl { min-width:60px; font-size:.72rem; } }
 
 /* #11 — progress ring */
