@@ -1291,31 +1291,31 @@
   /*  PC BUILDER SIMULATOR (M1 — Архітектура та історія цифрових пристроїв) */
   /* ------------------------------------------------------------------ */
   const PC_PARTS = [
-    { id:"cpu",      icon:"🔲", name:"Процесор (CPU)",             group:"int", slot:"cpu-socket",
+    { id:"cpu",      icon:"🔲", name:"Процесор (CPU)",             sname:"CPU",        group:"int", slot:"cpu-socket",
       desc:"Мозок комп'ютера — виконує мільярди операцій за секунду.",
       placed:"✅ CPU встановлено! Він виконує всі команди й керує рештою." },
-    { id:"cooler",   icon:"🌬️", name:"Кулер процесора",             group:"int", slot:"cpu-cooler",
+    { id:"cooler",   icon:"🌬️", name:"Кулер процесора",             sname:"Кулер",      group:"int", slot:"cpu-cooler",
       desc:"Охолоджує CPU. Без кулера процесор перегрівається за секунди.",
       placed:"✅ Кулер на місці! Утримує температуру CPU у межах 30–80 °C." },
-    { id:"ram",      icon:"📏", name:"Оперативна пам'ять (RAM)",    group:"int", slot:"ram-slots",
+    { id:"ram",      icon:"📏", name:"Оперативна пам'ять (RAM)",    sname:"RAM",        group:"int", slot:"ram-slots",
       desc:"Тимчасова пам'ять: тут живуть запущені програми. Вимкнув — зникло.",
       placed:"✅ RAM у DIMM-слотах! Відкриті вкладки браузера займають саме її." },
-    { id:"ssd",      icon:"💾", name:"SSD M.2 накопичувач",         group:"int", slot:"m2-slot",
+    { id:"ssd",      icon:"💾", name:"SSD M.2 накопичувач",         sname:"SSD M.2",    group:"int", slot:"m2-slot",
       desc:"Постійна пам'ять: ОС, програми, файли — зберігаються без живлення.",
       placed:"✅ SSD підключено! Windows завантажиться за 10–15 с замість хвилини." },
-    { id:"gpu",      icon:"🎮", name:"Відеокарта (GPU)",             group:"int", slot:"pcie-slot",
+    { id:"gpu",      icon:"🎮", name:"Відеокарта (GPU)",             sname:"GPU",        group:"int", slot:"pcie-slot",
       desc:"Обробляє зображення для монітора. Потрібна для ігор, відео, 3D.",
       placed:"✅ GPU у PCIe x16! Найдовший слот плати — саме для відеокарт." },
-    { id:"psu",      icon:"⚡", name:"Блок живлення (PSU)",          group:"int", slot:"psu-bay",
+    { id:"psu",      icon:"⚡", name:"Блок живлення (PSU)",          sname:"PSU",        group:"int", slot:"psu-bay",
       desc:"Перетворює 220 В у +12/5/3.3 В для кожного компонента.",
       placed:"✅ PSU у відсіку! Без нього жоден компонент не отримає живлення." },
-    { id:"monitor",  icon:"🖥️", name:"Монітор (пристрій виводу)",   group:"io",  slot:"monitor-port",
+    { id:"monitor",  icon:"🖥️", name:"Монітор (пристрій виводу)",   sname:"Монітор",    group:"io",  slot:"monitor-port",
       desc:"Пристрій ВИВОДУ — показує зображення, підготоване GPU.",
       placed:"✅ Монітор підключено! Тепер є екран. Пристрій виводу на місці." },
-    { id:"keyboard", icon:"⌨️", name:"Клавіатура (пристрій вводу)", group:"io",  slot:"usb-kb",
+    { id:"keyboard", icon:"⌨️", name:"Клавіатура (пристрій вводу)", sname:"Клавіатура", group:"io",  slot:"usb-kb",
       desc:"Пристрій ВВОДУ — ти вводиш текст і команди через USB.",
       placed:"✅ Клавіатура в USB! Пристрій вводу підключено." },
-    { id:"mouse",    icon:"🖱️", name:"Миша (пристрій вводу)",        group:"io",  slot:"usb-ms",
+    { id:"mouse",    icon:"🖱️", name:"Миша (пристрій вводу)",        sname:"Миша",       group:"io",  slot:"usb-ms",
       desc:"Пристрій ВВОДУ — керує курсором, передає кліки та рухи в CPU.",
       placed:"✅ Миша в USB! Разом з клавіатурою — повний комплект вводу." },
   ];
@@ -1410,7 +1410,7 @@
       const s=el("div","pcb-slot pcb-slot--"+sd.size+(placed[sd.accepts]?" filled":""));
       s.dataset.sid=sd.id;
       s.innerHTML=placed[sd.accepts]
-        ?`<span class="pcb-si">${p.icon}</span><span class="pcb-sn">${p.name}</span>`
+        ?`<span class="pcb-si">${p.icon}</span><span class="pcb-sn">${p.sname||p.name}</span>`
         :`<span class="pcb-sl">${sd.label}</span>`;
       slotEls[sd.id]=s;
       if(!done) s.addEventListener("click",()=>handleSlotClick(sd));
@@ -1484,7 +1484,7 @@
         placed[pid]=true;
         const s=slotEls[slotId];
         s.className="pcb-slot pcb-slot--"+sd.size+" filled flash-ok";
-        s.innerHTML=`<span class="pcb-si">${p.icon}</span><span class="pcb-sn">${p.name}</span>`;
+        s.innerHTML=`<span class="pcb-si">${p.icon}</span><span class="pcb-sn">${p.sname||p.name}</span>`;
         partCards[pid].classList.add("placed");
         infoBox.className="pcb-info-box success"; infoBox.textContent=p.placed;
         setTimeout(()=>s.classList.remove("flash-ok"),700);

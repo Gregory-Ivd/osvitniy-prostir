@@ -778,7 +778,7 @@ body.projector .topbar .iconbtn:not(#projBtn):not(#themeBtn) { display:none; }
 .pcb-sysunit .pcb-zone-lbl { color:#aab0bb; }
 .pcb-mobo { background:#1b4d2e; border:2px solid #2d7045; border-radius:8px; padding:9px; }
 .pcb-mobo-lbl { font-size:.55rem; color:rgba(255,255,255,.28); text-transform:uppercase; letter-spacing:.1em; margin-bottom:7px; }
-.pcb-mobo-grid { display:grid; grid-template-columns:1fr 1fr 76px; gap:6px; }
+.pcb-mobo-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; }
 .pcb-psu-zone { background:#1a1a1e; border:1px solid #333; border-radius:6px; padding:6px 8px; }
 /* desk */
 .pcb-desk { background:#e4e8ed; border:2px solid #c4ccd8; border-radius:10px; padding:9px; display:flex; flex-direction:column; gap:7px; }
