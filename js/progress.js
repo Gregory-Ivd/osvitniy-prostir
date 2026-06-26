@@ -47,7 +47,16 @@
   function save() {
     state.updatedAt = stamp();
     if (!state.startedAt) state.startedAt = state.updatedAt;
-    try { localStorage.setItem(KEYf(), JSON.stringify(state)); } catch (e) {}
+    try { localStorage.setItem(KEYf(), JSON.stringify(state)); } catch (e) {
+      if (!window._op8QuotaToast) {
+        window._op8QuotaToast = true;
+        const t = document.createElement("div");
+        t.textContent = "⚠️ Пам’ять пристрою заповнена — прогрес не зберігається. Очистіть кеш браузера.";
+        t.style.cssText = "position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#c0392b;color:#fff;padding:10px 18px;border-radius:8px;font-size:.85rem;z-index:9999;max-width:90vw;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,.3)";
+        document.body.appendChild(t);
+        setTimeout(()=>{t.remove();window._op8QuotaToast=false;},8000);
+      }
+    }
   }
   // дата без Date.now-залежності в коді движка не потрібна — беремо реальний час браузера користувача
   function stamp() { return new Date().toISOString(); }

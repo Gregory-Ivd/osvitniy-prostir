@@ -746,17 +746,42 @@
     shell.appendChild(menubar);
 
     const toolbar = el("div","gdocs-toolbar");
+
+    // замінник execCommand — для formatBlock використовує Selection API як primary,
+    // для решти команд пробує execCommand (підтримується всіма браузерами, просто deprecated)
+    function execFmt(cmd, val) {
+      if (cmd === "formatBlock") {
+        const sel = window.getSelection();
+        if (!sel || sel.rangeCount === 0) return;
+        let node = sel.getRangeAt(0).commonAncestorContainer;
+        if (node.nodeType === 3) node = node.parentNode;
+        while (node && node !== doc && !/^(P|H[1-6]|DIV|LI|BLOCKQUOTE)$/i.test(node.tagName)) {
+          node = node.parentNode;
+        }
+        if (node && node !== doc) {
+          const newEl = document.createElement(val);
+          while (node.firstChild) newEl.appendChild(node.firstChild);
+          node.parentNode.replaceChild(newEl, node);
+          const r = document.createRange();
+          r.selectNodeContents(newEl); r.collapse(false);
+          sel.removeAllRanges(); sel.addRange(r);
+          return;
+        }
+      }
+      try { document.execCommand(cmd, false, val || null); } catch(e) {}
+    }
+
     const headingSel = el("select","gdocs-heading-sel");
     [["Звичайний текст","p"],["Заголовок 1","h1"],["Заголовок 2","h2"]].forEach(([lbl,val])=>{
       const o=document.createElement("option"); o.value=val; o.textContent=lbl; headingSel.appendChild(o);
     });
-    // зберігаємо виділення перед тим, як <select> забере фокус у contenteditable
+    // pointerdown спрацьовує і на мишці і на touch (mousedown на touch ненадійний)
     let _hSel=null;
-    headingSel.addEventListener("mousedown",()=>{const s=window.getSelection();if(s&&s.rangeCount>0)_hSel=s.getRangeAt(0).cloneRange();});
+    headingSel.addEventListener("pointerdown",()=>{const s=window.getSelection();if(s&&s.rangeCount>0)_hSel=s.getRangeAt(0).cloneRange();});
     headingSel.addEventListener("change",()=>{
       if(!isDone()){
         if(_hSel){const s=window.getSelection();s.removeAllRanges();s.addRange(_hSel);}
-        document.execCommand("formatBlock",false,headingSel.value);
+        execFmt("formatBlock",headingSel.value);
         checkProgress();
       }
       _hSel=null;
@@ -775,7 +800,7 @@
     function mkBtn(html,cmd,val){
       const b=el("button","gdocs-btn"); b.innerHTML=html;
       b.addEventListener("mousedown",e=>e.preventDefault());
-      b.addEventListener("click",()=>{if(!isDone()){document.execCommand(cmd,false,val||null);}checkProgress();});
+      b.addEventListener("click",()=>{if(!isDone()){execFmt(cmd,val);}checkProgress();});
       return b;
     }
     const grp0=el("div","gdocs-tool-group");
