@@ -13,8 +13,64 @@
     <p class="no-print"><a href="../kabinet-vykladacha.html">← Кабінет викладача</a> · <a href="../index.html">До курсу</a></p>
     <div id="cert"></div>
   </div>
+
+  <!-- ОПИТУВАННЯ (no-print, видно тільки власнику сертифіката) -->
+  <div id="cert-survey" class="cert-survey no-print" style="display:none">
+    <h3>💬 Ваша думка про курс</h3>
+
+    <div class="survey-block">
+      <label>⭐ Загальна оцінка</label>
+      <div class="survey-stars">
+        <span title="1">★</span><span title="2">★</span><span title="3">★</span>
+        <span title="4">★</span><span title="5">★</span>
+      </div>
+    </div>
+
+    <div class="survey-block">
+      <label>📚 Що найкорисніше? (можна кілька)</label>
+      <div class="survey-checks">
+        <label><input type="checkbox" class="survey-useful" value="m1"> Архітектура ПК</label>
+        <label><input type="checkbox" class="survey-useful" value="m2"> ОС і файли</label>
+        <label><input type="checkbox" class="survey-useful" value="m3"> Інтернет і безпека</label>
+        <label><input type="checkbox" class="survey-useful" value="m4"> Дія та е-послуги</label>
+        <label><input type="checkbox" class="survey-useful" value="m5"> Документи і таблиці</label>
+        <label><input type="checkbox" class="survey-useful" value="m6"> ШІ та нові технології</label>
+      </div>
+    </div>
+
+    <div class="survey-block">
+      <label>😓 Що виявилось найважчим?</label>
+      <div class="survey-checks">
+        <label><input type="checkbox" class="survey-hard" value="m1"> Архітектура ПК</label>
+        <label><input type="checkbox" class="survey-hard" value="m2"> ОС і файли</label>
+        <label><input type="checkbox" class="survey-hard" value="m3"> Інтернет і безпека</label>
+        <label><input type="checkbox" class="survey-hard" value="m4"> Дія та е-послуги</label>
+        <label><input type="checkbox" class="survey-hard" value="m5"> Документи і таблиці</label>
+        <label><input type="checkbox" class="survey-hard" value="m6"> ШІ та нові технології</label>
+      </div>
+    </div>
+
+    <div class="survey-block">
+      <label>📣 Чи порадите курс іншим? (1 — ні, 10 — обов'язково)</label>
+      <div class="survey-nps-row">
+        <button data-v="1">1</button><button data-v="2">2</button><button data-v="3">3</button>
+        <button data-v="4">4</button><button data-v="5">5</button><button data-v="6">6</button>
+        <button data-v="7">7</button><button data-v="8">8</button><button data-v="9">9</button>
+        <button data-v="10">10</button>
+      </div>
+      <div class="survey-labels"><span>Навряд чи</span><span>Однозначно!</span></div>
+    </div>
+
+    <div class="survey-block">
+      <label>💬 Коментар (необов'язково)</label>
+      <textarea id="survey-comment" class="survey-comment" placeholder="Що сподобалось? Що варто покращити?"></textarea>
+    </div>
+
+    <button id="survey-submit-btn" class="survey-submit">Надіслати відгук ✓</button>
+  </div>
   <script src="../content/course.js"></script>
   <script src="../js/cabinet.js"></script>
+  <script src="../js/progress.js"></script>
   <script src="../js/certificate.js"></script>
   <script>
     (function(){
@@ -34,6 +90,56 @@
         wrap.appendChild(div);
       });
       if(ids.length > 1) setTimeout(function(){ window.print(); }, 600);
+
+      // Показуємо опитування тільки якщо відкриває СВІЙ сертифікат (не викладач чужий)
+      var activeId = Cabinet.activeId();
+      if(ids.length === 1 && ids[0] === activeId && window.Progress){
+        var existing = Progress.getSurvey();
+        var surveyWrap = document.getElementById("cert-survey");
+        if(existing){
+          surveyWrap.innerHTML = '<div class="survey-done">✅ Дякуємо! Ваш відгук вже збережено.</div>';
+        } else {
+          surveyWrap.style.display = "";
+        }
+      }
+    })();
+
+    // ── SURVEY LOGIC ──────────────────────────────────────────────────
+    (function(){
+      var rating = 0;
+      var nps = 0;
+
+      // Stars
+      var stars = document.querySelectorAll(".survey-stars span");
+      stars.forEach(function(s, i){
+        s.addEventListener("click", function(){
+          rating = i+1;
+          stars.forEach(function(st, j){ st.classList.toggle("on", j < rating); });
+        });
+      });
+
+      // NPS buttons
+      var npsbtns = document.querySelectorAll(".survey-nps-row button");
+      npsbtns.forEach(function(b){
+        b.addEventListener("click", function(){
+          nps = parseInt(b.dataset.v);
+          npsbtns.forEach(function(bb){ bb.classList.toggle("on", parseInt(bb.dataset.v)===nps); });
+        });
+      });
+
+      // Submit
+      document.getElementById("survey-submit-btn").addEventListener("click", function(){
+        if(!rating){ alert("Будь ласка, оберіть загальну оцінку (зірки)."); return; }
+        var useful = [], hard = [];
+        document.querySelectorAll(".survey-useful:checked").forEach(function(c){ useful.push(c.value); });
+        document.querySelectorAll(".survey-hard:checked").forEach(function(c){ hard.push(c.value); });
+        var comment = document.getElementById("survey-comment").value.trim();
+        if(window.Progress){
+          Progress.setSurvey({ rating:rating, useful:useful, hard:hard, nps:nps, comment:comment });
+        }
+        document.getElementById("cert-survey").innerHTML =
+          '<div class="survey-done">✅ Дякуємо за відгук! Ваша думка допоможе зробити курс кращим.</div>';
+      });
     })();
   </script>
 </body>

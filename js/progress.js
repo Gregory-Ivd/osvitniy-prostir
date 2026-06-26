@@ -21,6 +21,7 @@
       optionalDone: 0,    // виконані опційні/просунуті задачі
       selfTaskDone: 0     // виконані задачі «сам собі вчитель»
     },
+    survey: null,         // {rating, useful[], hard[], nps, comment, submittedAt}
     startedAt: null,
     updatedAt: null
   });
@@ -121,6 +122,9 @@
         startedAt: state.startedAt, updatedAt: state.updatedAt
       };
     },
+
+    setSurvey(data) { state.survey = Object.assign({ submittedAt: stamp() }, data); save(); },
+    getSurvey() { return state.survey || null; },
 
     reset() { state = blank(); save(); },
 

@@ -5,7 +5,7 @@ body { background:var(--bg); padding:24px; }
 .cert-page {
   background-color:#fff; color:#1a1c2e; border-radius:10px;
   padding:52px 60px; margin:0 auto 28px;
-  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100'><g stroke='%23c4d4e8' stroke-width='1.2' fill='none'><line x1='0' y1='25' x2='40' y2='25'/><line x1='60' y1='25' x2='100' y2='25'/><line x1='40' y1='0' x2='40' y2='25'/><line x1='40' y1='25' x2='40' y2='60'/><line x1='40' y1='60' x2='70' y2='60'/><line x1='70' y1='60' x2='70' y2='100'/><line x1='0' y1='75' x2='25' y2='75'/><line x1='25' y1='50' x2='25' y2='75'/><circle cx='40' cy='25' r='3'/><circle cx='70' cy='60' r='3'/></g><g fill='%23c4d4e8'><circle cx='25' cy='75' r='2.2'/><circle cx='40' cy='60' r='2.2'/></g></svg>");
+  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxMDAnIGhlaWdodD0nMTAwJz48ZyBzdHJva2U9JyNjNGQ0ZTgnIHN0cm9rZS13aWR0aD0nMS4yJyBmaWxsPSdub25lJz48bGluZSB4MT0nMCcgeTE9JzI1JyB4Mj0nNDAnIHkyPScyNScvPjxsaW5lIHgxPSc2MCcgeTE9JzI1JyB4Mj0nMTAwJyB5Mj0nMjUnLz48bGluZSB4MT0nNDAnIHkxPScwJyB4Mj0nNDAnIHkyPScyNScvPjxsaW5lIHgxPSc0MCcgeTE9JzI1JyB4Mj0nNDAnIHkyPSc2MCcvPjxsaW5lIHgxPSc0MCcgeTE9JzYwJyB4Mj0nNzAnIHkyPSc2MCcvPjxsaW5lIHgxPSc3MCcgeTE9JzYwJyB4Mj0nNzAnIHkyPScxMDAnLz48bGluZSB4MT0nMCcgeTE9Jzc1JyB4Mj0nMjUnIHkyPSc3NScvPjxsaW5lIHgxPScyNScgeTE9JzUwJyB4Mj0nMjUnIHkyPSc3NScvPjxjaXJjbGUgY3g9JzQwJyBjeT0nMjUnIHI9JzMnLz48Y2lyY2xlIGN4PSc3MCcgY3k9JzYwJyByPSczJy8+PC9nPjxnIGZpbGw9JyNjNGQ0ZTgnPjxjaXJjbGUgY3g9JzI1JyBjeT0nNzUnIHI9JzIuMicvPjxjaXJjbGUgY3g9JzQwJyBjeT0nNjAnIHI9JzIuMicvPjwvZz48L3N2Zz4=");
   background-size: 100px 100px;
   box-shadow:0 2px 4px rgba(21,53,107,.06), 0 12px 40px rgba(21,53,107,.1);
   position:relative; border:1px solid #e4eaf5;
@@ -57,6 +57,47 @@ body { background:var(--bg); padding:24px; }
 .fillable { border-bottom:1px dashed #c8d5e8; padding:10px 0;
   color:#1a1c2e; font-size:.9rem; }
 .cert-actions { text-align:center; margin:20px 0 40px; }
+
+/* ── ОПИТУВАННЯ СТУДЕНТА ─────────────────────────────────────── */
+.cert-survey {
+  max-width:860px; margin:0 auto 40px; background:#fff;
+  border:1px solid #e4eaf5; border-radius:10px; padding:32px 40px;
+  box-shadow:0 2px 12px rgba(21,53,107,.07);
+}
+.cert-survey h3 { color:#15356B; margin:0 0 20px; font-size:1.1rem; }
+.survey-block { margin-bottom:22px; }
+.survey-block label { display:block; font-weight:600; color:#1a1c2e; font-size:.9rem; margin-bottom:10px; }
+.survey-stars { display:flex; gap:6px; }
+.survey-stars span {
+  font-size:1.8rem; cursor:pointer; color:#d0d8e8; transition:color .15s;
+  user-select:none; line-height:1;
+}
+.survey-stars span.on, .survey-stars span:hover ~ span { color:#d0d8e8; }
+.survey-stars span.on, .survey-stars:hover span { color:#F39200; }
+.survey-stars span:hover ~ span { color:#d0d8e8 !important; }
+.survey-checks { display:flex; flex-wrap:wrap; gap:8px 16px; }
+.survey-checks label {
+  display:flex; align-items:center; gap:6px; font-size:.85rem;
+  color:#5b6472; cursor:pointer; font-weight:400;
+}
+.survey-checks input[type=checkbox] { accent-color:#15356B; width:15px; height:15px; }
+.survey-nps-row { display:flex; gap:6px; flex-wrap:wrap; }
+.survey-nps-row button {
+  width:36px; height:36px; border:1.5px solid #e4eaf5; border-radius:6px;
+  background:#f8f9fb; font-size:.85rem; font-weight:600; cursor:pointer;
+  color:#5b6472; transition:background .15s, border-color .15s;
+}
+.survey-nps-row button.on, .survey-nps-row button:hover { background:#15356B; border-color:#15356B; color:#fff; }
+.survey-comment { width:100%; box-sizing:border-box; border:1.5px solid #e4eaf5;
+  border-radius:8px; padding:10px 14px; font-size:.88rem; font-family:inherit;
+  resize:vertical; min-height:72px; color:#1a1c2e; outline:none; }
+.survey-comment:focus { border-color:#15356B; }
+.survey-submit { margin-top:8px; background:#15356B; color:#fff; border:none;
+  border-radius:8px; padding:10px 28px; font-size:.95rem; font-weight:700;
+  cursor:pointer; transition:background .15s; }
+.survey-submit:hover { background:#0C2A5A; }
+.survey-done { text-align:center; padding:24px; color:#2E9E5B; font-weight:600; font-size:1rem; }
+.survey-labels { display:flex; justify-content:space-between; font-size:.75rem; color:#8a96aa; margin-top:4px; }
 
 @media print {
   body { padding:0; background:#fff; }
